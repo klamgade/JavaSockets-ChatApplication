@@ -1,14 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package messages;
 
 /**
+ *  DMS S1 2016 ASSIGNMENT 1
+ *  Kamal Lamgade & Sez Prouting
  *
- * @author carmelsez
+ * Message used by the client to tell server the user wants to disconnect.
+ * 
+ * @author sez
  */
-public class DisconnectMessage {
+public class DisconnectMessage extends Message {
     
+    /**
+     * @param from Identifies the source of the message, use -1 for null source
+     */
+    public DisconnectMessage(int from){
+        super(from, 0);
+    }
 }

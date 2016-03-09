@@ -1,14 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package messages;
 
 /**
+ *  DMS S1 2016 ASSIGNMENT 1
+ *  Kamal Lamgade & Sez Prouting
  *
- * @author carmelsez
+ * Message populated by a user to be sent from one client and displayed on another.
+ * 
+ * @author sez
  */
-public class BroadcastMessage {
+public class BroadcastMessage extends ToMessage {
     
+    /**
+     * @param from Identifies the source of the message, use -1 for null source
+     * @param message The content of the user message
+     */
+    public BroadcastMessage(int from, String message){
+        super(from, -1, message);
+    }    
 }

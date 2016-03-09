@@ -15,6 +15,6 @@ public class BroadcastMessage extends ToMessage {
      * @param message The content of the user message
      */
     public BroadcastMessage(int from, String message){
-        super(from, -1, message);
+        super(from, -1, message); //should this be sent to Message.SERVER instead of -1 ??
     }    
 }

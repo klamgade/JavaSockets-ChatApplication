@@ -16,7 +16,6 @@ public class ToMessage extends Message{
     /**
      * @param from Identifies the source of the message, use -1 for null source
      * @param to Identifies the message destination, use 0 for server or -1 for null destination
-     * @param id Unique ID assigned to identify this message
      * @param message The content of the user message
      */
     public ToMessage(int from, int to, String message){

@@ -11,6 +11,7 @@ package messages;
 
 public abstract class Message implements Comparable<Message> {
     
+    protected final static int SERVER = 0;
     protected int from;
     protected int to;
     protected int msgID;
@@ -22,7 +23,6 @@ public abstract class Message implements Comparable<Message> {
     /**
      * @param from Identifies the source of the message, use -1 for null source
      * @param to Identifies the message destination, use 0 for server or -1 for null destination 
-     * @param id Unique ID assigned to identify this message
      */
     public Message(int from, int to){
         this.from = from;
@@ -52,12 +52,12 @@ public abstract class Message implements Comparable<Message> {
     /**
      * @return Returns the unique ID of this message
      */
-    public int getID() {return msgID;}
+    public int getMessageID() {return msgID;}
 
     /**
      * @param msgID Should be a sequential id set by the message handler
      */
-    public void setMsgID(int msgID) {this.msgID = msgID;}
+    public void setMessageID(int msgID) {this.msgID = msgID;}
 
     /**
      * Used to Change the destination address

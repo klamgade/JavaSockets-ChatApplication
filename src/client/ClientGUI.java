@@ -14,21 +14,7 @@ import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import messages.*;
@@ -36,7 +22,7 @@ import messages.*;
 public class ClientGUI extends JPanel {
     
     private final JLabel TITLE;
-    private final String CONNECT_MESSAGE="You are connected as: ";
+    private final String CONNECT_MESSAGE="Connected as: ";
     private MainInfoPanel mainInfoPanel;
     private ChatDisplayPanel chatPanel;
     private boolean connected;
@@ -75,8 +61,9 @@ public class ClientGUI extends JPanel {
             
         
         chatDisplay = new JTextArea();
-            chatDisplay.setText("there is some chatting going on\n here\n\n\tw007");
+            chatDisplay.setText("Kamal: Hi! What are you up to");
             chatDisplay.setEditable(false);
+            chatDisplay.setWrapStyleWord(true);
         chatInputField = new JTextField("Start typing...");
             chatInputField.selectAll();
             chatInputField.addActionListener(listener);
@@ -90,17 +77,21 @@ public class ClientGUI extends JPanel {
         
         
         // Set Look, Feel & Starting characteristics
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+//        setLayout(new BorderLayout());
         TITLE = new JLabel("Kamasez Chat Manager", JLabel.CENTER);
         TITLE.setFont(new Font("Serif", Font.BOLD, 18));
         mainInfoPanel = new MainInfoPanel();
         chatPanel = new ChatDisplayPanel();
             mainInfoPanel.setBorder(BorderFactory.createEtchedBorder());
-            chatPanel.setBorder(BorderFactory.createEtchedBorder());
+            chatPanel.setBorder(BorderFactory.createTitledBorder("Your conversation"));
         
         //Add components
-        add(mainInfoPanel, BorderLayout.WEST);
-        add(chatPanel, BorderLayout.CENTER);
+            add(mainInfoPanel);
+            add(Box.createRigidArea(new Dimension(0,20)));
+            add(chatPanel);
+        //add(mainInfoPanel, BorderLayout.CENTER);
+        //add(chatPanel, BorderLayout.EAST);
         
     }
     
@@ -137,8 +128,9 @@ public class ClientGUI extends JPanel {
         public ChatDisplayPanel(){
             super();
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            add(chatDisplay);
-            add(chatInputField);
+            add(new JScrollPane(chatDisplay));
+            add(Box.createRigidArea(new Dimension(0, 20)));
+            add(new JScrollPane(chatInputField));
             add(new SendMsgPanel(), BorderLayout.SOUTH);
         }
     }
@@ -174,7 +166,9 @@ public class ClientGUI extends JPanel {
                 }
                 
                 if(source == sendButton){
-                    chatDisplay.setText("you just pressed the send button\n\n\tWell done you!");
+                    chatDisplay.setText("From Kamal: Hi! What are you up to?" +
+                                        "\n\nTo Kamal: not much" +
+                                        "\n\nTo ALL: everyone stop!!");
                    // repaint();
                 }
         }
@@ -198,11 +192,12 @@ public class ClientGUI extends JPanel {
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension screenSize = tk.getScreenSize();
         frame.setLocationRelativeTo(null);
+        frame.setSize(screenSize.width/3, screenSize.height/2);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(new ClientGUI());
-        frame.pack();
-        frame.setLocation((screenSize.width / 2) - (frame.getWidth() / 2),
-                (screenSize.height / 2) - (frame.getHeight() / 2));
+        //frame.pack();
+        frame.setLocation((screenSize.width/2) - (frame.getWidth()/2),
+                (screenSize.height/2) - (frame.getHeight()/2));
         frame.setVisible(true);
     }
             

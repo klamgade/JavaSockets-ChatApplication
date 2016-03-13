@@ -11,7 +11,7 @@ package messages;
 
 public abstract class Message implements Comparable<Message> {
     
-    protected final static int SERVER = 0;
+    public final static int SERVER = 0;
     protected int from;
     protected int to;
     protected int msgID;

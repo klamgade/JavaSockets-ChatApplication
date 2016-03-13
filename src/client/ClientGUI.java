@@ -12,24 +12,41 @@ package client;
 
 import java.awt.*;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import messages.*;
 
 public class ClientGUI extends JPanel {
     
-    private MainInfoPanel mainInfoPanel;
-    private ChatPanel chatPanel;
     private final JLabel TITLE;
     private final String CONNECT_MESSAGE="You are connected as: ";
+    private MainInfoPanel mainInfoPanel;
+    private ChatDisplayPanel chatPanel;
+    private boolean connected;
+    private ListenerGroup listener;
     private JLabel connectionStatusLabel;
     private JButton connectionButton, bcastButton, sendButton;
-    private JTextField tester1, tester2;
+    private JTextArea chatDisplay;
+    private JTextField chatInputField;
+    private JList clientList;
+    private DefaultListModel clientListModel;
     
     public ClientGUI(){
         super();
@@ -41,12 +58,35 @@ public class ClientGUI extends JPanel {
         }
 
         //Instantiations
+        connected = false;
+        listener = new ListenerGroup();
         connectionStatusLabel = new JLabel(CONNECT_MESSAGE + "Disconnected");
+        
         connectionButton = new JButton("CONNECT");
         bcastButton = new JButton("Broadcast");
         sendButton = new JButton("SEND");
-        tester1 = new JTextField("Online");
-        tester2 = new JTextField("Chat here");
+        
+        clientListModel = new DefaultListModel();
+            clientListModel.addElement("Kamal");
+            clientListModel.addElement("Sez");
+        clientList = new JList(clientListModel);
+            clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            clientList.setFixedCellWidth(50);
+            
+        
+        chatDisplay = new JTextArea();
+            chatDisplay.setText("there is some chatting going on\n here\n\n\tw007");
+            chatDisplay.setEditable(false);
+        chatInputField = new JTextField("Start typing...");
+            chatInputField.selectAll();
+            chatInputField.addActionListener(listener);
+            
+        // Add listeners
+        connectionButton.addActionListener(listener);
+        bcastButton.addActionListener(listener);
+        sendButton.addActionListener(listener);
+        clientList.addListSelectionListener(listener);
+        
         
         
         // Set Look, Feel & Starting characteristics
@@ -54,7 +94,9 @@ public class ClientGUI extends JPanel {
         TITLE = new JLabel("Kamasez Chat Manager", JLabel.CENTER);
         TITLE.setFont(new Font("Serif", Font.BOLD, 18));
         mainInfoPanel = new MainInfoPanel();
-        chatPanel = new ChatPanel();
+        chatPanel = new ChatDisplayPanel();
+            mainInfoPanel.setBorder(BorderFactory.createEtchedBorder());
+            chatPanel.setBorder(BorderFactory.createEtchedBorder());
         
         //Add components
         add(mainInfoPanel, BorderLayout.WEST);
@@ -79,7 +121,7 @@ public class ClientGUI extends JPanel {
             super();
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             add(connectionStatusLabel);
-            add(tester1);
+            add(new JScrollPane(clientList));
             
         }
     }
@@ -91,11 +133,12 @@ public class ClientGUI extends JPanel {
         }
     }
     
-    private class ChatPanel extends JPanel{
-        public ChatPanel(){
+    private class ChatDisplayPanel extends JPanel{
+        public ChatDisplayPanel(){
             super();
-            setLayout(new BorderLayout());
-            add(tester2, BorderLayout.CENTER);
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            add(chatDisplay);
+            add(chatInputField);
             add(new SendMsgPanel(), BorderLayout.SOUTH);
         }
     }
@@ -106,6 +149,47 @@ public class ClientGUI extends JPanel {
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             add(bcastButton);
             add(sendButton);
+        }
+    }
+    
+    private class ListenerGroup implements ActionListener, ListSelectionListener{
+
+        /*********************************************************************************
+	BUTTON EVENTS
+	*******************************************************************************/
+        public void actionPerformed(ActionEvent e)
+        {
+                Object source = e.getSource();
+
+                if(source == connectionButton){
+                    if(connected){
+                        connectionButton.setText("CONNECT");
+                        connectionStatusLabel.setText(CONNECT_MESSAGE + "Disconnected");
+                    }
+                    else {
+                        connectionButton.setText("DISCONNECT");
+                        connectionStatusLabel.setText(CONNECT_MESSAGE + "Joe");
+                    }
+                    connected = !connected;
+                }
+                
+                if(source == sendButton){
+                    chatDisplay.setText("you just pressed the send button\n\n\tWell done you!");
+                   // repaint();
+                }
+        }
+        
+        /*********************************************************************************
+	JLIST SELECTION EVENTS
+	*******************************************************************************/
+        public void valueChanged(ListSelectionEvent e)
+        {
+            if (!e.getValueIsAdjusting() && !clientList.isSelectionEmpty())
+            {
+                String str = (String)clientListModel.elementAt(clientList.getSelectedIndex());
+                JOptionPane.showMessageDialog(null, "Value was changed to " + str);
+                mainInfoPanel.requestFocusInWindow();
+            }
         }
     }
     

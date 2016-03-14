@@ -8,12 +8,11 @@
  */
 package server;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import javax.swing.JOptionPane;
 import messages.*;
 
 public class Server {
@@ -63,7 +62,18 @@ public class Server {
         
         public void run(){
             System.out.println("IN Connection.run(): client-server connction is running in a new thread");
-            
+            try{
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                System.out.println("ois created");
+                
+                ToMessage msg = (ToMessage)ois.readObject();
+                System.out.println("Message = " + msg.getMessageBody());
+                
+                ois.close();
+            }
+            catch(IOException | ClassNotFoundException e){
+                System.out.println(e.getMessage());
+            }
             
         }
     }

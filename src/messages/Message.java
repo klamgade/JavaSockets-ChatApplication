@@ -1,5 +1,7 @@
 package messages;
 
+import java.io.Serializable;
+
 /**
  *  DMS S1 2016 ASSIGNMENT 1
  *  Kamal Lamgade & Sez Prouting
@@ -9,7 +11,7 @@ package messages;
  * @author sez
  */
 
-public abstract class Message implements Comparable<Message> {
+public abstract class Message implements Comparable<Message>, Serializable {
     
     public final static int SERVER = 0;
     protected int from;

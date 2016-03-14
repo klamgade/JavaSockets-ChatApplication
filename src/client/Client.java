@@ -3,14 +3,11 @@ package client;
 /**
  *  DMS S1 2016 ASSIGNMENT 1
  *  Kamal Lamgade & Sez Prouting
- * @author 
+ * @author Kamal
  */
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.Socket;
 import messages.*;
 /**
@@ -33,9 +30,10 @@ public class Client {
     public void startClient() {
         Socket socket = null;
         // creating an instance of ToMessage class
-        ToMessage message = new ToMessage(Message.SERVER, CLIENT, "Hello!!");
+        ToMessage message = new ToMessage(CLIENT, Message.SERVER, "Hello!!");
         message.setMessageBody("Hi! I am trying to send this message to the Server");
-        System.out.println("fasd"+ message.getMessageBody());
+        System.out.println("CHECK! "+ message.getMessageBody());
+        
         // initiating the connection by implemening TCP client.
         try {
             socket = new Socket(HOST_NAME, HOST_PORT);
@@ -45,8 +43,14 @@ public class Client {
         }
         // obtaining streams from socket and layering with appopriate filtering streams
        try{
-       ObjectOutputStream oos= new ObjectOutputStream(socket.getOutputStream());
-       oos.writeObject(message); // sending the message object to server
+            ObjectOutputStream oos= new ObjectOutputStream(socket.getOutputStream());
+            oos.flush();
+            System.out.println("oos created");
+            
+            oos.writeObject(message); // sending the message object to server
+            oos.flush();
+            System.out.println("message written");
+            oos.close();
        }
        catch(IOException e){
            System.out.println("Client error : " +e);

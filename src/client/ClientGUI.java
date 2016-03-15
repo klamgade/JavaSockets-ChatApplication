@@ -32,14 +32,14 @@ public class ClientGUI extends JPanel {
     private JTextArea chatDisplay;
     private JTextField chatInputField;
     private JList clientList;
-    private DefaultListModel clientListModel;
+    private DefaultListModel<String> clientListModel;
     
     public ClientGUI(){
         super();
         //Gets Look and Feel of OS
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             System.out.println("Error while setting look & feel: " + e.getMessage());
         }
 
@@ -52,10 +52,10 @@ public class ClientGUI extends JPanel {
         bcastButton = new JButton("Broadcast");
         sendButton = new JButton("SEND");
         
-        clientListModel = new DefaultListModel();
+        clientListModel = new DefaultListModel<String>();
             clientListModel.addElement("Kamal");
             clientListModel.addElement("Sez");
-        clientList = new JList(clientListModel);
+        clientList = new JList<String>(clientListModel);
             clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             clientList.setFixedCellWidth(50);
             

@@ -56,6 +56,10 @@ public class Client {
            System.out.println("Client error : " +e);
        }
   }
+    // method to get user's name
+    String userName = "Joe";
+    IdMessage msg = new IdMessage(userName);
+    
     public static void main(String[] args) {
         Client client = new Client();
         client.startClient();

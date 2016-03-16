@@ -32,8 +32,8 @@ public abstract class Message implements Comparable<Message>, Serializable {
         msgID = -1;
     }
     
-    public Message(){
-        this("", "");
+   public Message(){
+        this("" , "");
     }
 
     

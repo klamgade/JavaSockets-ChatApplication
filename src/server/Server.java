@@ -75,13 +75,13 @@ System.out.println("Connection made with " + socket.getInetAddress());
     private class InwardsMessageThread implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
- //       private Message currentMessage;
+        private boolean clientAdded;
         private ObjectInputStream inStream;
         
         public InwardsMessageThread(Socket s){
             socket = s;
             threadConnected = false;
- //           currentMessage = null;
+            clientAdded = false;
             inStream = null;
         }
         
@@ -114,8 +114,10 @@ System.out.println("ois created");
                         disconnectMessageHandler();
                     
                     // IdMessage to create a new client
-                //    if(currentMessage instanceof IdMessage)
-                //        newClientHandler();
+                    if(currentMessage instanceof IdMessage){
+                        clientAdded = newClientHandler(currentMessage);
+                        // return clientAdded (success flag) to the client.
+                    }
 
                     inStream.close();
                 }
@@ -141,8 +143,22 @@ System.out.println("client list entry: " + clientList);
             System.out.println("server received a DisconnectMessage");
         }
 
-        private void newClientHandler() {
-            System.out.println("server received an IdMessage");}
+        private boolean newClientHandler(Message newMsg) {
+System.out.println("server received an IdMessage");
+            //extract client name
+            IdMessage msg = (IdMessage)newMsg;
+            String clientName = msg.getSource();
+
+            // check if name is already taken
+            if(clientList.containsKey(clientName)){
+                return false;
+            }
+            else{
+                clientList.put(clientName, this);
+                return true;
+            }
+        }
+        
     }
     
  /*   private class OutwardsMessageThread implements Runnable{

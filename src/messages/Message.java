@@ -33,7 +33,7 @@ public abstract class Message implements Comparable<Message>, Serializable {
     }
     
     public Message(){
-        this(-1, -1);
+        this("", "");
     }
 
     

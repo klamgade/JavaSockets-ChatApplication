@@ -114,8 +114,8 @@ System.out.println("ois created");
                         disconnectMessageHandler();
                     
                     // IdMessage to create a new client
-                    if(curruntMessage instanceof IdMessage)
-                        newClientHandler();
+                //    if(currentMessage instanceof IdMessage)
+                //        newClientHandler();
 
                     inStream.close();
                 }

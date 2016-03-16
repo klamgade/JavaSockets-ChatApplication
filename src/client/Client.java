@@ -18,7 +18,7 @@ public class Client {
 
     public static final String HOST_NAME = "172.28.22.61";
     public static final int HOST_PORT = 8889; // host port number
-    public static final int CLIENT = 2;
+    public static final String CLIENT = "Joe";
     
     /* CONSTRUCTOR
      */

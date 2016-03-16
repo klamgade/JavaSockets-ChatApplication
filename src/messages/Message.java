@@ -13,9 +13,9 @@ import java.io.Serializable;
 
 public abstract class Message implements Comparable<Message>, Serializable {
     
-    public final static int SERVER = 0;
-    protected int from;
-    protected int to;
+    public final static String SERVER = "SERVER";
+    protected String from;
+    protected String to;
     protected int msgID;
     
 /******************************************************************************
@@ -26,7 +26,7 @@ public abstract class Message implements Comparable<Message>, Serializable {
      * @param from Identifies the source of the message, use -1 for null source
      * @param to Identifies the message destination, use 0 for server or -1 for null destination 
      */
-    public Message(int from, int to){
+    public Message(String from, String to){
         this.from = from;
         this.to = to;
         msgID = -1;
@@ -44,12 +44,12 @@ public abstract class Message implements Comparable<Message>, Serializable {
     /**
      * @return Returns the ID of the application or object which sent this message
      */
-    public int getSource() {return from;}
+    public String getSource() {return from;}
 
     /**
      * @return Returns the ID of the application or object to which this message is addressed
      */
-    public int getDestination() {return to;}
+    public String getDestination() {return to;}
 
     /**
      * @return Returns the unique ID of this message
@@ -65,7 +65,7 @@ public abstract class Message implements Comparable<Message>, Serializable {
      * Used to Change the destination address
      * @param to The destination identifier
      */
-    public void setDestination(int to) {this.to = to;}
+    public void setDestination(String to) {this.to = to;}
     
 /******************************************************************************
  *  COMPARATOR

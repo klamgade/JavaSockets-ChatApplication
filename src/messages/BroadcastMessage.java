@@ -14,7 +14,7 @@ public class BroadcastMessage extends ToMessage {
      * @param from Identifies the source of the message, use -1 for null source
      * @param message The content of the user message
      */
-    public BroadcastMessage(int from, String message){
+    public BroadcastMessage(String from, String message){
         super(from, Message.SERVER, message);
     }    
 }

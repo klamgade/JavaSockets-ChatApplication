@@ -13,7 +13,7 @@ public class DisconnectMessage extends Message {
     /**
      * @param from Identifies the source of the message, use -1 for null source
      */
-    public DisconnectMessage(int from){
+    public DisconnectMessage(String from){
         super(from, Message.SERVER);
     }
 }

@@ -18,7 +18,7 @@ public class ToMessage extends Message{
      * @param to Identifies the message destination, use 0 for server or -1 for null destination
      * @param message The content of the user message
      */
-    public ToMessage(int from, int to, String message){
+    public ToMessage(String from, String to, String message){
         super(from, to);
         content = message;
     }

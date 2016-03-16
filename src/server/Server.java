@@ -75,13 +75,13 @@ System.out.println("Connection made with " + socket.getInetAddress());
     private class InwardsMessageThread implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
-        private Message currentMessage;
+ //       private Message currentMessage;
         private ObjectInputStream inStream;
         
         public InwardsMessageThread(Socket s){
             socket = s;
             threadConnected = false;
-            currentMessage = null;
+ //           currentMessage = null;
             inStream = null;
         }
         
@@ -99,13 +99,11 @@ System.out.println("ois created");
             
             while(threadConnected){
                 try{
-                    clientList.put("Joe", this);
-System.out.println("client list entry: " + clientList.toString());
-                    currentMessage = (Message)inStream.readObject();
+                    Message currentMessage = (Message)inStream.readObject();
 
                     // ToMessage to be passed to another client
                     if(currentMessage instanceof ToMessage)
-                        toMessageHandler();
+                        toMessageHandler(currentMessage);
 
                     // Broadcast to be passed to ALL clients
                     if(currentMessage instanceof BroadcastMessage)
@@ -114,17 +112,25 @@ System.out.println("client list entry: " + clientList.toString());
                     // Disconnect to close connection
                     if(currentMessage instanceof DisconnectMessage)
                         disconnectMessageHandler();
+                    
+                    // IdMessage to create a new client
+                    if(curruntMessage instanceof IdMessage)
+                        newClientHandler();
 
                     inStream.close();
                 }
                 catch(IOException | ClassNotFoundException e){
-                    System.out.println(e.getMessage());
+                    //System.out.println(e.getMessage());
                 }
             }
         }
 
-        private void toMessageHandler() {
-            System.out.println("server received a ToMessage");
+        private void toMessageHandler(Message inMsg) {
+System.out.println("server received a ToMessage");
+            ToMessage message = (ToMessage)inMsg;
+            if(!clientList.containsKey(message.getSource()))
+                clientList.put(message.getSource(), this);
+System.out.println("client list entry: " + clientList);
         }
 
         private void broadcastMessageHandler() {
@@ -134,6 +140,9 @@ System.out.println("client list entry: " + clientList.toString());
         private void disconnectMessageHandler() {
             System.out.println("server received a DisconnectMessage");
         }
+
+        private void newClientHandler() {
+            System.out.println("server received an IdMessage");}
     }
     
  /*   private class OutwardsMessageThread implements Runnable{

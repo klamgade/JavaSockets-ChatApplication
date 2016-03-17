@@ -75,13 +75,14 @@ System.out.println("Connection made with " + socket.getInetAddress());
     private class InwardsMessageThread extends Thread{ //implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
-        private boolean clientAdded;
+        private boolean clientAdded, msgReceived;
         private ObjectInputStream inStream;
         
         public InwardsMessageThread(Socket s){
             socket = s;
             threadConnected = false;
             clientAdded = false;
+            msgReceived = false;
             inStream = null;
         }
         
@@ -107,8 +108,10 @@ System.out.println("ois created");
                 }finally{
 
                     // ToMessage to be passed to another client
-                    if(currentMessage instanceof ToMessage)
-                        toMessageHandler((ToMessage)currentMessage);
+                    if(currentMessage instanceof ToMessage){
+                        msgReceived = toMessageHandler((ToMessage)currentMessage);
+                        System.out.println("\tsuccessful toMessage = " + msgReceived);
+                    }
 
                     // Broadcast to be passed to ALL clients
                     if(currentMessage instanceof BroadcastMessage)
@@ -121,6 +124,7 @@ System.out.println("ois created");
                     // IdMessage to create a new client
                     if(currentMessage instanceof IdMessage){
                         clientAdded = newClientHandler((IdMessage)currentMessage);
+                        System.out.println("\tclientAdded boolean = " + clientAdded);
                         // return clientAdded (success flag) to the client.
                     }
                 }
@@ -138,10 +142,12 @@ System.out.println("server received a ToMessage");
             String dest = inMsg.getSource();
             
             if(!clientList.containsKey(dest)){
+                System.out.println("This client doesn't exist");
                 return false;
             }
             else{
                 //send message here
+                System.out.println("\tand the message is: " + inMsg.getMessageBody());
                 return true;
             }
         }
@@ -172,6 +178,7 @@ System.out.println("server received an IdMessage");
             }
             else{
                 clientList.put(clientName, this);
+                System.out.println("\tthe source of the IdMessage is: " + clientName);
                 return true;
             }
         }

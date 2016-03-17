@@ -29,10 +29,13 @@ public class Client {
     // method to send message from client to server 
     public void startClient() {
         Socket socket = null;
-        // creating an instance of ToMessage class
-        ToMessage message = new ToMessage(CLIENT, Message.SERVER, "Hello!!");
-        message.setMessageBody("Hi! I am trying to send this message to the Server");
-        System.out.println("CHECK! "+ message.getMessageBody());
+        
+//Test variables
+        IdMessage idMsg = new IdMessage(CLIENT);
+        ToMessage toMsg = new ToMessage(CLIENT, Message.SERVER, "This is the ToMessage");
+        BroadcastMessage bcMsg = new BroadcastMessage(CLIENT, "This is the BroadcastMessage");
+        DisconnectMessage discMsg = new DisconnectMessage(CLIENT);
+        
         
         // initiating the connection by implemening TCP client.
         try {
@@ -47,10 +50,21 @@ public class Client {
             oos.flush();
             System.out.println("oos created");
             
-            oos.writeObject(message); // sending the message object to server
+//Send test messages
+            oos.writeObject(idMsg);
             oos.flush();
-            System.out.println("message written");
+            System.out.println("idMsg sent to server");
+            
+            oos.writeObject(toMsg);
+            oos.flush();
+            System.out.println("toMsg sent to server");
+            
+            oos.writeObject(bcMsg);
+            oos.flush();
+            System.out.println("bcMsg sent to server");
+            
             oos.close();
+            System.out.println("oos closed");
        }
        catch(IOException e){
            System.out.println("Client error : " +e);

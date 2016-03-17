@@ -22,7 +22,7 @@ public class Server {
     public static final int PORT=8889;
     protected ServerSocket serverSocket;
     protected boolean ssConnected;  //connection status of serverSocket
-    protected Map clientList;   //list of clients by name & incomming thread
+    protected Map<String, Thread> clientList;   //list of clients by name & incomming thread
     
     public Server(){
         ssConnected = false;
@@ -72,7 +72,7 @@ System.out.println("Connection made with " + socket.getInetAddress());
     /**
      * Server tread which handles incoming messages from the client
      */
-    private class InwardsMessageThread implements Runnable{
+    private class InwardsMessageThread extends Thread{ //implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
         private boolean clientAdded;
@@ -98,12 +98,17 @@ System.out.println("ois created");
             }
             
             while(threadConnected){
+                Message currentMessage = null;
                 try{
-                    Message currentMessage = (Message)inStream.readObject();
+                    currentMessage = (Message)inStream.readObject();
+                }
+                catch(IOException | ClassNotFoundException e){
+                    System.out.println(e.getMessage());
+                }finally{
 
                     // ToMessage to be passed to another client
                     if(currentMessage instanceof ToMessage)
-                        toMessageHandler(currentMessage);
+                        toMessageHandler((ToMessage)currentMessage);
 
                     // Broadcast to be passed to ALL clients
                     if(currentMessage instanceof BroadcastMessage)
@@ -111,36 +116,48 @@ System.out.println("ois created");
 
                     // Disconnect to close connection
                     if(currentMessage instanceof DisconnectMessage)
-                        disconnectMessageHandler();
+                        threadConnected = disconnectMessageHandler((DisconnectMessage)currentMessage);
                     
                     // IdMessage to create a new client
                     if(currentMessage instanceof IdMessage){
-                        clientAdded = newClientHandler(currentMessage);
+                        clientAdded = newClientHandler((IdMessage)currentMessage);
                         // return clientAdded (success flag) to the client.
                     }
-
-                    inStream.close();
                 }
-                catch(IOException | ClassNotFoundException e){
-                    //System.out.println(e.getMessage());
-                }
+            }
+            try{
+                inStream.close();
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
             }
         }
 
-        private void toMessageHandler(Message inMsg) {
+        private boolean toMessageHandler(ToMessage inMsg) {
 System.out.println("server received a ToMessage");
-            ToMessage message = (ToMessage)inMsg;
-            if(!clientList.containsKey(message.getSource()))
-                clientList.put(message.getSource(), this);
-System.out.println("client list entry: " + clientList);
+            String dest = inMsg.getSource();
+            
+            if(!clientList.containsKey(dest)){
+                return false;
+            }
+            else{
+                //send message here
+                return true;
+            }
         }
 
         private void broadcastMessageHandler() {
             System.out.println("server received a BroadcastMessage");
         }
 
-        private void disconnectMessageHandler() {
+        private boolean disconnectMessageHandler(DisconnectMessage disMsg) {
             System.out.println("server received a DisconnectMessage");
+            String client = disMsg.getSource();
+            if(clientList.containsKey(client)){
+                clientList.remove(client);
+                return true;
+            }
+            else return false;
         }
 
         private boolean newClientHandler(Message newMsg) {

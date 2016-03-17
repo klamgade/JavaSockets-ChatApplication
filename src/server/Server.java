@@ -107,26 +107,30 @@ System.out.println("ois created");
                     System.out.println(e.getMessage());
                 }finally{
 
+                    // Broadcast to be passed to ALL clients
+                    if(currentMessage instanceof BroadcastMessage){
+                        broadcastMessageHandler();
+                    }
+                    else if(currentMessage instanceof ToMessage){
                     // ToMessage to be passed to another client
-                    if(currentMessage instanceof ToMessage){
+                    
                         msgReceived = toMessageHandler((ToMessage)currentMessage);
                         System.out.println("\tsuccessful toMessage = " + msgReceived);
                     }
 
-                    // Broadcast to be passed to ALL clients
-                    if(currentMessage instanceof BroadcastMessage)
-                        broadcastMessageHandler();
-
-                    // Disconnect to close connection
-                    if(currentMessage instanceof DisconnectMessage)
-                        threadConnected = disconnectMessageHandler((DisconnectMessage)currentMessage);
-                    
                     // IdMessage to create a new client
                     if(currentMessage instanceof IdMessage){
                         clientAdded = newClientHandler((IdMessage)currentMessage);
                         System.out.println("\tclientAdded boolean = " + clientAdded);
                         // return clientAdded (success flag) to the client.
                     }
+
+                    // Disconnect to close connection
+                    if(currentMessage instanceof DisconnectMessage){
+                        threadConnected = !disconnectMessageHandler((DisconnectMessage)currentMessage);
+                        
+                    }
+                    
                 }
             }
             try{

@@ -16,7 +16,7 @@ import messages.*;
  */
 public class Client {
 
-    public static final String HOST_NAME = "172.28.22.61";
+    public static final String HOST_NAME = "10.0.0.9";
     public static final int HOST_PORT = 8889; // host port number
     public static final String CLIENT = "Joe";
     
@@ -62,6 +62,14 @@ public class Client {
             oos.writeObject(bcMsg);
             oos.flush();
             System.out.println("bcMsg sent to server");
+            
+            oos.writeObject(idMsg);
+            oos.flush();
+            System.out.println("another idMsg sent to server");
+            
+            oos.writeObject(discMsg);
+            oos.flush();
+            System.out.println("disc sent to server");
             
             oos.close();
             System.out.println("oos closed");

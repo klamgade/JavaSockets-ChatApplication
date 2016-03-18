@@ -22,7 +22,7 @@ public class Server {
     public static final int PORT=8889;
     protected ServerSocket serverSocket;
     protected boolean ssConnected;  //connection status of serverSocket
-    protected Map clientList;   //list of clients by name & incomming thread
+    protected Map<String, Thread> clientList;   //list of clients by name & incomming thread
     
     public Server(){
         ssConnected = false;
@@ -57,7 +57,7 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
         while(ssConnected){
             try{
                 Socket socket = serverSocket.accept();
-System.out.println("Connection made with " + socket.getInetAddress());
+//System.out.println("Connection made with " + socket.getInetAddress());
                 Thread inThread = new Thread(new InwardsMessageThread(socket));
                 //Thread outThread = new Thread(new OutwardsMessageThread(socket));
                 inThread.start();
@@ -70,24 +70,25 @@ System.out.println("Connection made with " + socket.getInetAddress());
     }
     
     /**
-     * Server tread which handles incoming messages from the client
+     * Thread which handles incoming messages from the client
      */
-    private class InwardsMessageThread implements Runnable{
+    private class InwardsMessageThread extends Thread{ //implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
-        private boolean clientAdded;
+        private boolean clientAdded, msgReceived;
         private ObjectInputStream inStream;
         
         public InwardsMessageThread(Socket s){
             socket = s;
             threadConnected = false;
             clientAdded = false;
+            msgReceived = false;
             inStream = null;
         }
         
         public void run(){
 System.out.println("IN Connection.run(): client-server connction is running in a new thread");
-            // Open streams, read incoming messages
+            // Open stream
             try{
                 inStream = new ObjectInputStream(socket.getInputStream());
                 threadConnected = true;
@@ -97,50 +98,79 @@ System.out.println("ois created");
                 System.out.println(e.getMessage());
             }
             
+            //read incoming messages
             while(threadConnected){
+                Message currentMessage = null;
                 try{
-                    Message currentMessage = (Message)inStream.readObject();
-
-                    // ToMessage to be passed to another client
-                    if(currentMessage instanceof ToMessage)
-                        toMessageHandler(currentMessage);
+                    currentMessage = (Message)inStream.readObject();
+                }
+                catch(IOException | ClassNotFoundException e){
+                    //System.out.println("is this it" + e.getMessage());
+                }finally{
 
                     // Broadcast to be passed to ALL clients
-                    if(currentMessage instanceof BroadcastMessage)
+                    if(currentMessage instanceof BroadcastMessage){
                         broadcastMessageHandler();
-
-                    // Disconnect to close connection
-                    if(currentMessage instanceof DisconnectMessage)
-                        disconnectMessageHandler();
+                    }
+                    // ToMessage to be passed to another client
+                    else if(currentMessage instanceof ToMessage){
                     
+                        msgReceived = toMessageHandler((ToMessage)currentMessage);
+                        System.out.println("\tsuccessful toMessage = " + msgReceived);
+                    }
+
                     // IdMessage to create a new client
                     if(currentMessage instanceof IdMessage){
-                        clientAdded = newClientHandler(currentMessage);
+                        clientAdded = newClientHandler((IdMessage)currentMessage);
+                        System.out.println("\tclientAdded boolean = " + clientAdded);
                         // return clientAdded (success flag) to the client.
                     }
 
-                    inStream.close();
+                    // Disconnect to close connection
+                    if(currentMessage instanceof DisconnectMessage){
+                        threadConnected = !disconnectMessageHandler((DisconnectMessage)currentMessage);
+                        
+                    }
+                    
                 }
-                catch(IOException | ClassNotFoundException e){
-                    //System.out.println(e.getMessage());
-                }
+            }
+            try{
+                inStream.close();
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
             }
         }
 
-        private void toMessageHandler(Message inMsg) {
+        private boolean toMessageHandler(ToMessage inMsg) {
 System.out.println("server received a ToMessage");
-            ToMessage message = (ToMessage)inMsg;
-            if(!clientList.containsKey(message.getSource()))
-                clientList.put(message.getSource(), this);
-System.out.println("client list entry: " + clientList);
+            String src = inMsg.getSource();
+            String dest = inMsg.getDestination();
+            
+            if(!clientList.containsKey(src)){
+                System.out.println("This client doesn't exist");
+                return false;
+            }
+            else{
+                //send message here
+                System.out.println("\tThe message is from: "+ dest +
+                                    "\n\tand the message is: " + inMsg.getMessageBody());
+                return true;
+            }
         }
 
         private void broadcastMessageHandler() {
             System.out.println("server received a BroadcastMessage");
         }
 
-        private void disconnectMessageHandler() {
+        private boolean disconnectMessageHandler(DisconnectMessage disMsg) {
             System.out.println("server received a DisconnectMessage");
+            String client = disMsg.getSource();
+            if(clientList.containsKey(client)){
+                clientList.remove(client);
+                return true;
+            }
+            else return false;
         }
 
         private boolean newClientHandler(Message newMsg) {
@@ -151,10 +181,12 @@ System.out.println("server received an IdMessage");
 
             // check if name is already taken
             if(clientList.containsKey(clientName)){
+                System.out.println("we already have that client");
                 return false;
             }
             else{
                 clientList.put(clientName, this);
+                System.out.println("\tthe source of the IdMessage is: " + clientName);
                 return true;
             }
         }

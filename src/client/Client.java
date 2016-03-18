@@ -33,11 +33,6 @@ public class Client {
 
     // method to send message from client to server 
     public void startClient() {
-        //Socket socket = null;
-        // creating an instance of ToMessage class
-        //ToMessage message = new ToMessage(CLIENT, Message.SERVER, "Hello!!");
-        //message.setMessageBody("Hi! I am trying to send this message to the Server");
-        //System.out.println("CHECK! "+ message.getMessageBody());
         
         // initiating the connection by implemening TCP client.
         try {

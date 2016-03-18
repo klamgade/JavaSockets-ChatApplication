@@ -19,20 +19,25 @@ public class Client {
     public static final String HOST_NAME = "172.28.22.61";
     public static final int HOST_PORT = 8889; // host port number
     public static final String CLIENT = "Joe";
+    public ObjectOutputStream oos;
+    public Socket socket;
+    public boolean connected;
     
     /* CONSTRUCTOR
      */
     public Client() {
-
+     oos = null ;
+     socket = null;
+     connected = false;
     }
 
     // method to send message from client to server 
     public void startClient() {
-        Socket socket = null;
+        //Socket socket = null;
         // creating an instance of ToMessage class
-        ToMessage message = new ToMessage(CLIENT, Message.SERVER, "Hello!!");
-        message.setMessageBody("Hi! I am trying to send this message to the Server");
-        System.out.println("CHECK! "+ message.getMessageBody());
+        //ToMessage message = new ToMessage(CLIENT, Message.SERVER, "Hello!!");
+        //message.setMessageBody("Hi! I am trying to send this message to the Server");
+        //System.out.println("CHECK! "+ message.getMessageBody());
         
         // initiating the connection by implemening TCP client.
         try {
@@ -43,25 +48,43 @@ public class Client {
         }
         // obtaining streams from socket and layering with appopriate filtering streams
        try{
-            ObjectOutputStream oos= new ObjectOutputStream(socket.getOutputStream());
+            oos= new ObjectOutputStream(socket.getOutputStream());
             oos.flush();
             System.out.println("oos created");
-            
-            oos.writeObject(message); // sending the message object to server
-            oos.flush();
-            System.out.println("message written");
-            oos.close();
+            connected = true;
        }
        catch(IOException e){
            System.out.println("Client error : " +e);
        }
   }
-    // method to get user's name
-    String userName = "Joe";
-    IdMessage msg = new IdMessage(userName);
+    public void sendMessage(Message msg){
+        try{
+        if(connected){
+        oos.writeObject(msg);
+        oos.flush();
+        }
+        
+        if(msg instanceof DisconnectMessage ){
+            oos.close();
+            connected = false;
+        }
+        }
+        catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+    } 
     
+    /**
+     * Shows if output stream is open
+     * @return true if output stream is open, otherwise false
+     */
+    public boolean isConnected(){
+        return connected;
+    }
+
     public static void main(String[] args) {
         Client client = new Client();
         client.startClient();
     }
 }
+

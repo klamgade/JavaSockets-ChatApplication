@@ -10,12 +10,11 @@ package messages;
  * @author kamallamgadeAUT
  */
 // class to get user's name
-public class IdMessage extends Message{
-    
+public class IdMessage extends Message {
+
 // constructor     
-public IdMessage(String from) {
-    super(from, Message.SERVER);
-}
-  
-    
+    public IdMessage(String from) {
+        super(from, Message.SERVER);
+    }
+
 }

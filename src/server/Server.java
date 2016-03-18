@@ -120,7 +120,7 @@ System.out.println("ois created");
                     inStream.close();
                 }
                 catch(IOException | ClassNotFoundException e){
-                    //System.out.println(e.getMessage());
+                    System.out.println(e.getMessage());
                 }
             }
         }

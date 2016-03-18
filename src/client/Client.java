@@ -19,16 +19,20 @@ public class Client {
     public static final String HOST_NAME = "10.0.0.9";
     public static final int HOST_PORT = 8889; // host port number
     public static final String CLIENT = "Joe";
+    public OutputObjectStream oos;
+    public Socket socket;
+    public boolean connectod;
     
     /* CONSTRUCTOR
      */
     public Client() {
-
+        oos = null;
+        socket = null;
+        connected = false;
     }
 
     // method to send message from client to server 
     public void startClient() {
-        Socket socket = null;
        
         // initiating the connection by implemening TCP client.
         try {
@@ -42,9 +46,8 @@ public class Client {
             ObjectOutputStream oos= new ObjectOutputStream(socket.getOutputStream());
             oos.flush();
             System.out.println("oos created");
+            connected = true;
             
-            oos.close();
-            System.out.println("oos closed");
        }
        catch(IOException e){
            System.out.println("Client error : " +e);

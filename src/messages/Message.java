@@ -23,8 +23,8 @@ public abstract class Message implements Comparable<Message>, Serializable {
  ******************************************************************************/
     
     /**
-     * @param from Identifies the source of the message, use -1 for null source
-     * @param to Identifies the message destination, use 0 for server or -1 for null destination 
+     * @param from Identifies the source of the message, use "null" for null source
+     * @param to Identifies the message destination, use static variable Message.SERVER for server or "null" for null destination 
      */
     public Message(String from, String to){
         this.from = from;

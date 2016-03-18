@@ -57,7 +57,7 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
         while(ssConnected){
             try{
                 Socket socket = serverSocket.accept();
-System.out.println("Connection made with " + socket.getInetAddress());
+//System.out.println("Connection made with " + socket.getInetAddress());
                 Thread inThread = new Thread(new InwardsMessageThread(socket));
                 //Thread outThread = new Thread(new OutwardsMessageThread(socket));
                 inThread.start();
@@ -70,7 +70,7 @@ System.out.println("Connection made with " + socket.getInetAddress());
     }
     
     /**
-     * Server tread which handles incoming messages from the client
+     * Thread which handles incoming messages from the client
      */
     private class InwardsMessageThread extends Thread{ //implements Runnable{
         private Socket socket;
@@ -88,7 +88,7 @@ System.out.println("Connection made with " + socket.getInetAddress());
         
         public void run(){
 System.out.println("IN Connection.run(): client-server connction is running in a new thread");
-            // Open streams, read incoming messages
+            // Open stream
             try{
                 inStream = new ObjectInputStream(socket.getInputStream());
                 threadConnected = true;
@@ -98,21 +98,22 @@ System.out.println("ois created");
                 System.out.println(e.getMessage());
             }
             
+            //read incoming messages
             while(threadConnected){
                 Message currentMessage = null;
                 try{
                     currentMessage = (Message)inStream.readObject();
                 }
                 catch(IOException | ClassNotFoundException e){
-                    System.out.println(e.getMessage());
+                    //System.out.println("is this it" + e.getMessage());
                 }finally{
 
                     // Broadcast to be passed to ALL clients
                     if(currentMessage instanceof BroadcastMessage){
                         broadcastMessageHandler();
                     }
-                    else if(currentMessage instanceof ToMessage){
                     // ToMessage to be passed to another client
+                    else if(currentMessage instanceof ToMessage){
                     
                         msgReceived = toMessageHandler((ToMessage)currentMessage);
                         System.out.println("\tsuccessful toMessage = " + msgReceived);
@@ -143,15 +144,17 @@ System.out.println("ois created");
 
         private boolean toMessageHandler(ToMessage inMsg) {
 System.out.println("server received a ToMessage");
-            String dest = inMsg.getSource();
+            String src = inMsg.getSource();
+            String dest = inMsg.getDestination();
             
-            if(!clientList.containsKey(dest)){
+            if(!clientList.containsKey(src)){
                 System.out.println("This client doesn't exist");
                 return false;
             }
             else{
                 //send message here
-                System.out.println("\tand the message is: " + inMsg.getMessageBody());
+                System.out.println("\tThe message is from: "+ dest +
+                                    "\n\tand the message is: " + inMsg.getMessageBody());
                 return true;
             }
         }
@@ -178,6 +181,7 @@ System.out.println("server received an IdMessage");
 
             // check if name is already taken
             if(clientList.containsKey(clientName)){
+                System.out.println("we already have that client");
                 return false;
             }
             else{

@@ -11,7 +11,7 @@ package messages;
 public class DisconnectMessage extends Message {
     
     /**
-     * @param from Identifies the source of the message, use -1 for null source
+     * @param from Identifies the source of the message, use "null" for null source
      */
     public DisconnectMessage(String from){
         super(from, Message.SERVER);

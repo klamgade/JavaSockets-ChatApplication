@@ -29,14 +29,7 @@ public class Client {
     // method to send message from client to server 
     public void startClient() {
         Socket socket = null;
-        
-//Test variables
-        IdMessage idMsg = new IdMessage(CLIENT);
-        ToMessage toMsg = new ToMessage(CLIENT, Message.SERVER, "This is the ToMessage");
-        BroadcastMessage bcMsg = new BroadcastMessage(CLIENT, "This is the BroadcastMessage");
-        DisconnectMessage discMsg = new DisconnectMessage(CLIENT);
-        
-        
+       
         // initiating the connection by implemening TCP client.
         try {
             socket = new Socket(HOST_NAME, HOST_PORT);
@@ -49,27 +42,6 @@ public class Client {
             ObjectOutputStream oos= new ObjectOutputStream(socket.getOutputStream());
             oos.flush();
             System.out.println("oos created");
-            
-//Send test messages
-            oos.writeObject(idMsg);
-            oos.flush();
-            System.out.println("idMsg sent to server");
-            
-            oos.writeObject(toMsg);
-            oos.flush();
-            System.out.println("toMsg sent to server");
-            
-            oos.writeObject(bcMsg);
-            oos.flush();
-            System.out.println("bcMsg sent to server");
-            
-            oos.writeObject(idMsg);
-            oos.flush();
-            System.out.println("another idMsg sent to server");
-            
-            oos.writeObject(discMsg);
-            oos.flush();
-            System.out.println("disc sent to server");
             
             oos.close();
             System.out.println("oos closed");

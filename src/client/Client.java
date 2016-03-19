@@ -110,8 +110,10 @@ public class Client {
                     System.out.println("Error reading message: " +e.getMessage());
                 }
                 finally{
-                    System.out.println("Message details are\n\tFROM: " +inMessage.getSource() +
+                    if(inMessage != null){
+                        System.out.println("Message details are\n\tFROM: " +inMessage.getSource() +
                             "\n\tTO: " + inMessage.getDestination());
+                    }
                 }
             }
         }

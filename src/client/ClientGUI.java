@@ -14,6 +14,8 @@ import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -33,6 +35,7 @@ public class ClientGUI extends JPanel {
     private JTextField chatInputField;
     private JList clientList;
     private DefaultListModel<String> clientListModel;
+    private Client connection;
     
     public ClientGUI(){
         super();
@@ -51,31 +54,30 @@ public class ClientGUI extends JPanel {
         connectionButton = new JButton("CONNECT");
         bcastButton = new JButton("Broadcast");
         sendButton = new JButton("SEND");
-        
+
         clientListModel = new DefaultListModel<String>();
-            clientListModel.addElement("Kamal");
-            clientListModel.addElement("Sez");
+        clientListModel.addElement("Kamal");
+        clientListModel.addElement("Sez");
         clientList = new JList<String>(clientListModel);
-            clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            clientList.setFixedCellWidth(50);
-            
+        clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        clientList.setFixedCellWidth(50);
+
         
         chatDisplay = new JTextArea();
-            chatDisplay.setText("Kamal: Hi! What are you up to");
-            chatDisplay.setEditable(false);
-            chatDisplay.setWrapStyleWord(true);
+        chatDisplay.setText("Kamal: Hi! What are you up to");
+        chatDisplay.setEditable(false);
+        chatDisplay.setWrapStyleWord(true);
         chatInputField = new JTextField("Start typing...");
-            chatInputField.selectAll();
-            chatInputField.addActionListener(listener);
-            
+        chatInputField.selectAll();
+        chatInputField.addActionListener(listener);
+
         // Add listeners
         connectionButton.addActionListener(listener);
         bcastButton.addActionListener(listener);
         sendButton.addActionListener(listener);
         clientList.addListSelectionListener(listener);
         
-        
-        
+     
         // Set Look, Feel & Starting characteristics
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 //        setLayout(new BorderLayout());
@@ -83,9 +85,9 @@ public class ClientGUI extends JPanel {
         TITLE.setFont(new Font("Serif", Font.BOLD, 18));
         mainInfoPanel = new MainInfoPanel();
         chatPanel = new ChatDisplayPanel();
-            mainInfoPanel.setBorder(BorderFactory.createEtchedBorder());
-            chatPanel.setBorder(BorderFactory.createTitledBorder("Your conversation"));
-        
+        mainInfoPanel.setBorder(BorderFactory.createEtchedBorder());
+        chatPanel.setBorder(BorderFactory.createTitledBorder("Your conversation"));
+
         //Add components
             add(mainInfoPanel);
             add(Box.createRigidArea(new Dimension(0,20)));
@@ -93,6 +95,7 @@ public class ClientGUI extends JPanel {
         //add(mainInfoPanel, BorderLayout.CENTER);
         //add(chatPanel, BorderLayout.EAST);
         
+        connection = new Client();
     }
     
     
@@ -144,8 +147,15 @@ public class ClientGUI extends JPanel {
         }
     }
     
-    private class ListenerGroup implements ActionListener, ListSelectionListener{
+    // method to get user's name
+    public void getUserName() {
+        String userName = "Joe";
+        IdMessage msg = new IdMessage(userName);
 
+    }
+    
+    private class ListenerGroup implements ActionListener, ListSelectionListener{
+         String userName;
         /*********************************************************************************
 	BUTTON EVENTS
 	*******************************************************************************/
@@ -154,13 +164,25 @@ public class ClientGUI extends JPanel {
                 Object source = e.getSource();
 
                 if(source == connectionButton){
-                    if(connected){
+                    if (connected) { //If already connected & want to disconnect
                         connectionButton.setText("CONNECT");
                         connectionStatusLabel.setText(CONNECT_MESSAGE + "Disconnected");
+                        connection.sendMessage(new DisconnectMessage(userName));
+
                     }
-                    else {
-                        connectionButton.setText("DISCONNECT");
-                        connectionStatusLabel.setText(CONNECT_MESSAGE + "Joe");
+                    else { // if disconnected & want to connect
+                        // opening a connection
+                        
+                        connection.startClient();
+                      userName = (String) JOptionPane.showInputDialog("Enter your Username");
+                        IdMessage idMessage = new IdMessage(userName);
+                        if(connection.isConnected()){
+                            connection.sendMessage(idMessage);
+                            JOptionPane.showMessageDialog(null, "Yey!! User" + idMessage.getSource() + "is connected.");
+                            //connection.sendMessage(new DisconnectMessage(userName));
+                            connectionButton.setText("DISCONNECT");
+                            connectionStatusLabel.setText(CONNECT_MESSAGE + userName);
+                        }  
                     }
                     connected = !connected;
                 }

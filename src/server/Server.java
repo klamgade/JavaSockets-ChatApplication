@@ -24,11 +24,11 @@ public class Server {
     protected final int IN_THREAD=0, OUT_THREAD=1; // array locations for each client thread
     protected ServerSocket serverSocket;
     protected boolean ssConnected;  //connection status of serverSocket
-    protected Map<String, Thread[]> clientList;   //list of clients by name & incomming thread
+    protected Map<String, Runnable[]> clientList;   //list of clients by name & incomming thread
     
     public Server(){
         ssConnected = false;
-        clientList = new ConcurrentHashMap<String, Thread[]>();
+        clientList = new ConcurrentHashMap<String, Runnable[]>();
         //FOR DEV: obtain local IP
         try{
             System.out.println(InetAddress.getLocalHost().getHostAddress());
@@ -60,15 +60,17 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
             try{
                 Socket socket = serverSocket.accept();
 //System.out.println("Connection made with " + socket.getInetAddress());
-                Thread[] thArray = new Thread[]{(new Thread(new InwardsMessageThread(socket))),(new Thread(new OutwardsMessageThread(socket)))};
-                //Thread inThread = new Thread(new InwardsMessageThread(socket));
-                //Thread outThread = new Thread(new OutwardsMessageThread(socket));
+                Thread inThread = new Thread(new InwardsMessageThread(socket));
+                Thread outThread = new Thread(new OutwardsMessageThread(socket));
                 
-                InwardsMessageThread inThread = (InwardsMessageThread)thArray[IN_THREAD];
-                inThread.passArray(thArray);
+                Runnable[] threadArray = new Runnable[]{inThread, outThread};
                 
-                thArray[IN_THREAD].start();
-                thArray[OUT_THREAD].start();
+                
+                InwardsMessageThread inMsgThread = (InwardsMessageThread)threadArray[IN_THREAD];
+                inMsgThread.passArray(threadArray);
+                
+                inThread.start();
+                outThread.start();
                 
                 //inThread.start();
                 //outThread.start();
@@ -82,12 +84,12 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
     /**
      * Thread which handles incoming messages from the client
      */
-    private class InwardsMessageThread extends Thread{ //implements Runnable{
+    private class InwardsMessageThread implements Runnable{ //implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
         private boolean clientAdded, msgReceived;
         private ObjectInputStream inStream;
-        private Thread[] threadArray;
+        private Runnable[] threadArray;
         
         public InwardsMessageThread(Socket s){
             socket = s;
@@ -154,7 +156,7 @@ System.out.println("ois created");
             }
         }
 
-        public void passArray(Thread[] array){
+        public void passArray(Runnable[] array){
             threadArray = array;
         }
         
@@ -227,7 +229,7 @@ System.out.println("server received an IdMessage");
      
     }
     
-    private class OutwardsMessageThread extends Thread{
+    private class OutwardsMessageThread implements Runnable{
         private Socket socket;
         private ObjectOutputStream oos;
         

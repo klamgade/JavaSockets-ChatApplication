@@ -219,6 +219,10 @@ System.out.println("server received an IdMessage");
                 //add this input thread to the thread appay in the client map
                 clientList.put(clientName, threadArray);
                 System.out.println("\tthe source of the IdMessage is: " + clientName);
+                
+                //test script only
+//                OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get("Joe")[OUT_THREAD];
+//                outThread.sendMessage(newMsg);
                 return true;
             }
         }
@@ -250,6 +254,7 @@ System.out.println("server received an IdMessage");
             try{
                 oos.writeObject(msg);
                 oos.flush();
+                System.out.println("wrote msg to: " + msg.getSource());
             }
             catch(IOException e){
                 System.out.println("Problem sending message: " +e.getMessage());
@@ -257,6 +262,7 @@ System.out.println("server received an IdMessage");
             
             try{
                 oos.close();
+                System.out.println("and closed oos");
             }
             catch(IOException e){
                 System.out.println("issue closing output stream: " +e.getMessage());

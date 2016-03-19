@@ -55,15 +55,15 @@ public class Client {
   }
     public void sendMessage(Message msg){
         try{
-        if(connected){
-        oos.writeObject(msg);
-        oos.flush();
-        }
+            if(connected){
+                oos.writeObject(msg);
+                oos.flush();
+            }
         
-        if(msg instanceof DisconnectMessage ){
-            oos.close();
-            connected = false;
-        }
+            if(msg instanceof DisconnectMessage ){
+                oos.close();
+                connected = false;
+            }
         }
         catch(IOException e){
             System.out.println(e.getMessage());

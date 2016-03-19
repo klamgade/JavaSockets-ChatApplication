@@ -15,19 +15,20 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import messages.*;
 
 public class Server {
     public static final int PORT=8889;
+    protected final int IN_THREAD=0, OUT_THREAD=1; // array locations for each client thread
     protected ServerSocket serverSocket;
     protected boolean ssConnected;  //connection status of serverSocket
-    protected Map<String, Thread> clientList;   //list of clients by name & incomming thread
+    protected Map<String, Thread[]> clientList;   //list of clients by name & incomming thread
     
     public Server(){
         ssConnected = false;
-        clientList = new HashMap<String, Thread>();
+        clientList = new ConcurrentHashMap<String, Thread[]>();
         //FOR DEV: obtain local IP
         try{
             System.out.println(InetAddress.getLocalHost().getHostAddress());
@@ -59,9 +60,17 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
             try{
                 Socket socket = serverSocket.accept();
 //System.out.println("Connection made with " + socket.getInetAddress());
-                Thread inThread = new Thread(new InwardsMessageThread(socket));
+                Thread[] thArray = new Thread[]{(new Thread(new InwardsMessageThread(socket))),(new Thread(new OutwardsMessageThread(socket)))};
+                //Thread inThread = new Thread(new InwardsMessageThread(socket));
                 //Thread outThread = new Thread(new OutwardsMessageThread(socket));
-                inThread.start();
+                
+                InwardsMessageThread inThread = (InwardsMessageThread)thArray[IN_THREAD];
+                inThread.passArray(thArray);
+                
+                thArray[IN_THREAD].start();
+                thArray[OUT_THREAD].start();
+                
+                //inThread.start();
                 //outThread.start();
             }
             catch(IOException e){
@@ -78,6 +87,7 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
         private boolean threadConnected;    // connection status of this thread
         private boolean clientAdded, msgReceived;
         private ObjectInputStream inStream;
+        private Thread[] threadArray;
         
         public InwardsMessageThread(Socket s){
             socket = s;
@@ -85,6 +95,7 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
             clientAdded = false;
             msgReceived = false;
             inStream = null;
+            threadArray = new Thread[2];
         }
         
         public void run(){
@@ -143,6 +154,10 @@ System.out.println("ois created");
             }
         }
 
+        public void passArray(Thread[] array){
+            threadArray = array;
+        }
+        
         /**
          * Passes the incoming message to the destination client
          * @param inMsg the ToMessage object which shall be passed to the destination client
@@ -158,7 +173,10 @@ System.out.println("server received a ToMessage");
                 return false;
             }
             else{
-                //send message here
+                // find outbound thread of destination client & send
+                //OutwardsMessageThread outThread = (OutwardsMessageThread)clientList.get(dest)[OUT_THREAD];
+                OutwardsMessageThread outThread = (OutwardsMessageThread)clientList.get("Joe")[OUT_THREAD];
+                outThread.sendMessage(inMsg);
                 System.out.println("\tThe message is from: "+ dest +
                                     "\n\tand the message is: " + inMsg.getMessageBody());
                 return true;
@@ -200,28 +218,53 @@ System.out.println("server received an IdMessage");
                 return false;
             }
             else{
-                clientList.put(clientName, this);
+                //add this input thread to the thread appay in the client map
+                clientList.put(clientName, threadArray);
                 System.out.println("\tthe source of the IdMessage is: " + clientName);
                 return true;
             }
         }
-        
+     
     }
     
- /*   private class OutwardsMessageThread implements Runnable{
+    private class OutwardsMessageThread extends Thread{
         private Socket socket;
-        private Message currentMessage;
         private ObjectOutputStream oos;
         
         public OutwardsMessageThread(Socket s){
             socket = s;
-            currentMessage = null;
             oos = null;
         }
         
         public void run(){
+            
+            try{
+                oos= new ObjectOutputStream(socket.getOutputStream());
+                oos.flush();
+    System.out.println("oos created");
+            }
+            catch(IOException e){
+                System.out.println("Error making output stream: " +e.getMessage());
+            }
         }
-    }*/
+        
+        public void sendMessage(Message msg){
+            try{
+                oos.writeObject(msg);
+                oos.flush();
+            }
+            catch(IOException e){
+                System.out.println("Problem sending message: " +e.getMessage());
+            }
+            
+            try{
+                oos.close();
+            }
+            catch(IOException e){
+                System.out.println("issue closing output stream: " +e.getMessage());
+            }
+        }
+    }
     
     public static void main(String[] args) {
         Server s = new Server();

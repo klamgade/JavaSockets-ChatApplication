@@ -115,7 +115,7 @@ System.out.println("ois created");
                     currentMessage = (Message)inStream.readObject();
                 }
                 catch(IOException | ClassNotFoundException e){
-                    //System.out.println("is this it" + e.getMessage());
+                    System.out.println("Error reading message: " + e.getMessage());
                 }finally{
 
                     // Broadcast to be passed to ALL clients
@@ -260,6 +260,7 @@ System.out.println("server received an IdMessage");
                 System.out.println("Problem sending message: " +e.getMessage());
             }
             
+            // test code only, oos should be closed after a disconnect message
             try{
                 oos.close();
                 System.out.println("and closed oos");

@@ -21,7 +21,7 @@ public class Client {
     public static final String CLIENT = "Joe";
     public OutputObjectStream oos;
     public Socket socket;
-    public boolean connectod;
+    public boolean connected;
     
     /* CONSTRUCTOR
      */

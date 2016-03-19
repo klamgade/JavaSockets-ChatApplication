@@ -1,13 +1,12 @@
-package messages;
-
 /**
  *  DMS S1 2016 ASSIGNMENT 1
  *  Kamal Lamgade & Sez Prouting
  *
  * Message populated by a user to be sent from one client and displayed on another.
  * 
- * @author sez
+ * @author Sez
  */
+package messages;
 
 public class ToMessage extends Message{
     

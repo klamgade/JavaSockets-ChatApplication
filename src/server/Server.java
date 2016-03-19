@@ -7,6 +7,7 @@
  */
 
 package server;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -110,7 +111,7 @@ System.out.println("ois created");
 
                     // Broadcast to be passed to ALL clients
                     if(currentMessage instanceof BroadcastMessage){
-                        broadcastMessageHandler();
+                        broadcastMessageHandler((BroadcastMessage)currentMessage);
                     }
                     // ToMessage to be passed to another client
                     else if(currentMessage instanceof ToMessage){
@@ -142,6 +143,11 @@ System.out.println("ois created");
             }
         }
 
+        /**
+         * Passes the incoming message to the destination client
+         * @param inMsg the ToMessage object which shall be passed to the destination client
+         * @return false if the destination client does not exist
+         */
         private boolean toMessageHandler(ToMessage inMsg) {
 System.out.println("server received a ToMessage");
             String src = inMsg.getSource();
@@ -159,7 +165,11 @@ System.out.println("server received a ToMessage");
             }
         }
 
-        private void broadcastMessageHandler() {
+        /**
+         * Passes the incoming message to all clients which are connected to the server
+         * @param msg the BroadcastMessage object which shall be broadcast to all clients
+         */
+        private void broadcastMessageHandler(BroadcastMessage msg) {
             System.out.println("server received a BroadcastMessage");
         }
 
@@ -173,11 +183,16 @@ System.out.println("server received a ToMessage");
             else return false;
         }
 
-        private boolean newClientHandler(Message newMsg) {
+        /**
+         * Identifies a newly connected client, if the client name does not already exist in the Server's list,
+         * the server will add the new client.
+         * @param newMsg provides the client name which will be added to the client list
+         * @return false if there is already a client by that name in the server's client list
+         */
+        private boolean newClientHandler(IdMessage newMsg) {
 System.out.println("server received an IdMessage");
             //extract client name
-            IdMessage msg = (IdMessage)newMsg;
-            String clientName = msg.getSource();
+            String clientName = newMsg.getSource();
 
             // check if name is already taken
             if(clientList.containsKey(clientName)){

@@ -1,19 +1,19 @@
-package client;
-
 /**
  *  DMS S1 2016 ASSIGNMENT 1
  *  Kamal Lamgade & Sez Prouting
+ * 
+ * A class which acts as a client by connecting to the server and sending/receiving message objects through
+ * the in/out streams.
+ * 
  * @author Kamal
  */
+package client;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import messages.*;
-/**
- *
- * @author carmelsez
- */
+
 public class Client {
 
     public static final String HOST_NAME = "10.0.0.9";

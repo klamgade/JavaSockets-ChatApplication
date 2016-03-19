@@ -1,15 +1,14 @@
-package messages;
-
-import java.io.Serializable;
-
 /**
  *  DMS S1 2016 ASSIGNMENT 1
  *  Kamal Lamgade & Sez Prouting
  *
  * Abstract class to handle client-server messages
  * 
- * @author sez
+ * @author Sez
  */
+package messages;
+
+import java.io.Serializable;
 
 public abstract class Message implements Comparable<Message>, Serializable {
     

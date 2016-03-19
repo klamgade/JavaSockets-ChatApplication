@@ -1,13 +1,13 @@
-package messages;
-
 /**
  *  DMS S1 2016 ASSIGNMENT 1
  *  Kamal Lamgade & Sez Prouting
  *
  * Message used by the client to tell server the user wants to disconnect.
  * 
- * @author sez
+ * @author Sez
  */
+package messages;
+
 public class DisconnectMessage extends Message {
     
     /**

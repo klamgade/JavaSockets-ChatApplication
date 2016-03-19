@@ -1,18 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ *  DMS S1 2016 ASSIGNMENT 1
+ *  Kamal Lamgade & Sez Prouting
+ *
+ * A Message used to inform the server of the client's desired name
+ * 
+ * @author Kamal
  */
 package messages;
 
-/**
- *
- * @author kamallamgadeAUT
- */
-// class to get user's name
+
 public class IdMessage extends Message {
 
-// constructor     
+    /**
+     * @param from is the name the client is requesting to be known by.
+     */
     public IdMessage(String from) {
         super(from, Message.SERVER);
     }

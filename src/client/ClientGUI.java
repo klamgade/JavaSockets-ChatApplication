@@ -1,5 +1,3 @@
-    package client;
-
 /**
  *  DMS S1 2016 ASSIGNMENT 1
  *  Kamal Lamgade & Sez Prouting
@@ -7,8 +5,9 @@
  * A GUI for the user to chat with other clients. Uses the client class to
  * connect to the server.
  * 
- * @author Sez Prouting
+ * @author Sez and Kamal
  */
+package client;
 
 import java.awt.*;
 import java.awt.BorderLayout;
@@ -147,13 +146,9 @@ public class ClientGUI extends JPanel {
         }
     }
     
-    // method to get user's name
-    public void getUserName() {
-        String userName = "Joe";
-        IdMessage msg = new IdMessage(userName);
-
-    }
-    
+    /**
+     * This class is used as one location where all listener actions are handled
+     */
     private class ListenerGroup implements ActionListener, ListSelectionListener{
          String userName;
         /*********************************************************************************
@@ -191,7 +186,6 @@ public class ClientGUI extends JPanel {
                     chatDisplay.setText("From Kamal: Hi! What are you up to?" +
                                         "\n\nTo Kamal: not much" +
                                         "\n\nTo ALL: everyone stop!!");
-                   // repaint();
                 }
         }
         

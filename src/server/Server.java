@@ -60,20 +60,16 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
             try{
                 Socket socket = serverSocket.accept();
 //System.out.println("Connection made with " + socket.getInetAddress());
-                Thread inThread = new Thread(new InwardsMessageThread(socket));
-                Thread outThread = new Thread(new OutwardsMessageThread(socket));
+                InputStreamRunnable inStream = new InputStreamRunnable(socket);
+                OutputStreamRunnable outStream = new OutputStreamRunnable(socket);
                 
-                Runnable[] threadArray = new Runnable[]{inThread, outThread};
+                Runnable[] threadArray = new Runnable[]{inStream, outStream};
+                inStream.passArray(threadArray);
                 
-                
-                InwardsMessageThread inMsgThread = (InwardsMessageThread)threadArray[IN_THREAD];
-                inMsgThread.passArray(threadArray);
-                
+                Thread inThread = new Thread(inStream);
+                Thread outThread = new Thread(outStream);
                 inThread.start();
                 outThread.start();
-                
-                //inThread.start();
-                //outThread.start();
             }
             catch(IOException e){
                 System.out.println("There's a problem accepting the client socket Cx: " + e.getMessage());
@@ -84,14 +80,14 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
     /**
      * Thread which handles incoming messages from the client
      */
-    private class InwardsMessageThread implements Runnable{ //implements Runnable{
+    private class InputStreamRunnable implements Runnable{ //implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
         private boolean clientAdded, msgReceived;
         private ObjectInputStream inStream;
         private Runnable[] threadArray;
         
-        public InwardsMessageThread(Socket s){
+        public InputStreamRunnable(Socket s){
             socket = s;
             threadConnected = false;
             clientAdded = false;
@@ -176,8 +172,8 @@ System.out.println("server received a ToMessage");
             }
             else{
                 // find outbound thread of destination client & send
-                //OutwardsMessageThread outThread = (OutwardsMessageThread)clientList.get(dest)[OUT_THREAD];
-                OutwardsMessageThread outThread = (OutwardsMessageThread)clientList.get("Joe")[OUT_THREAD];
+                //OutwardsMessageThread outThread = (OutputStreamRunnable)clientList.get(dest)[OUT_THREAD];
+                OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get("Joe")[OUT_THREAD];
                 outThread.sendMessage(inMsg);
                 System.out.println("\tThe message is from: "+ dest +
                                     "\n\tand the message is: " + inMsg.getMessageBody());
@@ -229,11 +225,11 @@ System.out.println("server received an IdMessage");
      
     }
     
-    private class OutwardsMessageThread implements Runnable{
+    private class OutputStreamRunnable implements Runnable{
         private Socket socket;
         private ObjectOutputStream oos;
         
-        public OutwardsMessageThread(Socket s){
+        public OutputStreamRunnable(Socket s){
             socket = s;
             oos = null;
         }

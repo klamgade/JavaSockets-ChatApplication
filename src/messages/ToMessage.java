@@ -14,8 +14,8 @@ public class ToMessage extends Message{
     protected String content;
     
     /**
-     * @param from Identifies the source of the message, use -1 for null source
-     * @param to Identifies the message destination, use 0 for server or -1 for null destination
+     * @param from Identifies the source of the message, use "null" for null source
+     * @param to Identifies the message destination, use static variable Message.SERVER for server
      * @param message The content of the user message
      */
     public ToMessage(String from, String to, String message){

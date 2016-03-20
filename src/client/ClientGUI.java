@@ -151,6 +151,7 @@ public class ClientGUI extends JPanel {
      */
     private class ListenerGroup implements ActionListener, ListSelectionListener{
          String userName;
+         String destination;
         /*********************************************************************************
 	BUTTON EVENTS
 	*******************************************************************************/
@@ -206,6 +207,8 @@ public class ClientGUI extends JPanel {
                     chatDisplay.setText("From Kamal: Hi! What are you up to?" +
                                         "\n\nTo Kamal: not much" +
                                         "\n\nTo ALL: everyone stop!!");
+                    ToMessage currentMessage = new ToMessage(userName, destination, "Hello!! how are u ?");
+                    connection.sendMessage(currentMessage);
                 }
         }
         
@@ -216,8 +219,8 @@ public class ClientGUI extends JPanel {
         {
             if (!e.getValueIsAdjusting() && !clientList.isSelectionEmpty())
             {
-                String str = (String)clientListModel.elementAt(clientList.getSelectedIndex());
-                JOptionPane.showMessageDialog(null, "Value was changed to " + str);
+                destination = (String)clientListModel.elementAt(clientList.getSelectedIndex());
+                JOptionPane.showMessageDialog(null, "Value was changed to " + destination);
                 mainInfoPanel.requestFocusInWindow();
             }
         }

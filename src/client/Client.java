@@ -17,7 +17,7 @@ import messages.*;
 
 public class Client {
 
-    public static final String HOST_NAME = "172.28.117.89";
+    public static final String HOST_NAME = "172.28.22.61";
     public static final int HOST_PORT = 8889; // host port number
     public static final String CLIENT = "Joe";
     protected Socket socket;

@@ -21,7 +21,7 @@ public class Client {
     public static final int HOST_PORT = 8889; // host port number
     public static final String CLIENT = "Joe";
     protected Socket socket;
-    protected boolean connected;
+    protected boolean connected, waitingSuccessMsg;
     private InputStreamRunnable inputStream;
     private OutputStreamRunnable outputStream;
     
@@ -29,6 +29,7 @@ public class Client {
     public Client() {
      socket = null;
      connected = false;
+     waitingSuccessMsg = false;
      inputStream = null;
      outputStream = null;
     }
@@ -36,7 +37,7 @@ public class Client {
      
     public void startClient() {
 
-        // initiating the connection by implemening TCP client.
+        // open socket & start input/output stream threads
         try {
             socket = new Socket(HOST_NAME, HOST_PORT);
         } 
@@ -59,6 +60,11 @@ public class Client {
         }
     }
     
+    /**
+     * Passes message to output thread for sending. Closes the in/out streams if the message
+     * is an instance of DisconnectMessage
+     * @param msg the Message object which is to be sent to the server
+     */
     public void sendMessage(Message msg){
         if(connected){
             outputStream.sendMessage(msg);
@@ -79,16 +85,24 @@ public class Client {
         return connected;
     }
     
+    public boolean checkMessageSuccess(){
+        if(connected){
+            return inputStream.getSuccess();
+        }
+        else return false;
+    }
+    
     private class InputStreamRunnable implements Runnable{
         
         protected ObjectInputStream ois;
         protected Socket socket;
-        private boolean inStreamConnected;
+        private boolean inStreamConnected, wasSuccessful;
         
         public InputStreamRunnable(Socket s){
             ois = null;
             socket = s;
             inStreamConnected = false;
+            wasSuccessful = false;
         }
         
         @Override
@@ -111,6 +125,11 @@ public class Client {
                 }
                 finally{
                     if(inMessage != null){
+                        if((inMessage instanceof SuccessMessage) && waitingSuccessMsg){
+                            SuccessMessage succMsg = (SuccessMessage)inMessage;
+                            wasSuccessful = succMsg.getSuccess();
+                            waitingSuccessMsg = false;
+                        }
                         System.out.println("Message details are\n\tFROM: " +inMessage.getSource() +
                             "\n\tTO: " + inMessage.getDestination());
                     }
@@ -118,6 +137,9 @@ public class Client {
             }
         }
         
+        /**
+         * Closes the InputObjectStream
+         */
         public void close(){
             try{
                 ois.close();
@@ -126,6 +148,10 @@ public class Client {
             catch(IOException e){
                 System.out.println(e.getMessage());
             }
+        }
+        
+        public boolean getSuccess(){
+            return wasSuccessful;
         }
     }
     
@@ -152,6 +178,10 @@ public class Client {
             }
         }
         
+        /**
+         * Sends a Message to the server
+         * @param msg Message object which is written to the ObjectOutputStream
+         */
         public void sendMessage(Message msg){
             try{
                 oos.writeObject(msg);
@@ -161,8 +191,16 @@ public class Client {
             catch(IOException e){
                 System.out.println("Error while writing msg: " + e.getMessage());
             }
+            // if outbound message is IdMessage, client needs to know if it has been accepted
+                // by the server, inputStream needs to know whether a success message is expected or not
+            if(msg instanceof IdMessage){
+                waitingSuccessMsg = true;
+            }
         }
         
+        /**
+         * Closes the ObjectOutputStream
+         */
         public void close(){
             try{
                 oos.close();

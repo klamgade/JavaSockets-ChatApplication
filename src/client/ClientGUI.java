@@ -166,18 +166,28 @@ public class ClientGUI extends JPanel {
 
                     }
                     else { // if disconnected & want to connect
-                        // opening a connection
                         
                         connection.startClient();
-                      userName = (String) JOptionPane.showInputDialog("Enter your Username");
-                        IdMessage idMessage = new IdMessage(userName);
-                        if(connection.isConnected()){
-                            connection.sendMessage(idMessage);
-                            JOptionPane.showMessageDialog(null, "Yey!! User" + idMessage.getSource() + "is connected.");
-                            //connection.sendMessage(new DisconnectMessage(userName));
-                            connectionButton.setText("DISCONNECT");
-                            connectionStatusLabel.setText(CONNECT_MESSAGE + userName);
-                        }  
+                        boolean clientAdded = false;
+                        //get users desired name & request it of the server
+                        while(!clientAdded){
+                            userName = (String) JOptionPane.showInputDialog("Enter your Username");
+                            IdMessage idMessage = new IdMessage(userName);
+
+                            if(connection.isConnected()){
+                                connection.sendMessage(idMessage);
+                                if(connection.checkMessageSuccess()){
+                                    JOptionPane.showMessageDialog(null, "Yey!! User" + idMessage.getSource() + "is connected.");
+                                    connectionButton.setText("DISCONNECT");
+                                    connectionStatusLabel.setText(CONNECT_MESSAGE + userName);
+                                    clientAdded = true;
+                                }
+                                else{
+                                    JOptionPane.showMessageDialog(null, "Sorry, " + idMessage.getSource() + "is already taken.\n" +
+                                                                    "Please try another name");
+                                }
+                            }  
+                        }
                     }
                     connected = !connected;
                 }

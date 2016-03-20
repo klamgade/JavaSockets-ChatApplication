@@ -128,6 +128,7 @@ public class Client {
                         if((inMessage instanceof SuccessMessage) && waitingSuccessMsg){
                             SuccessMessage succMsg = (SuccessMessage)inMessage;
                             wasSuccessful = succMsg.getSuccess();
+       System.out.println("wasSuccessful = " + wasSuccessful);
                             waitingSuccessMsg = false;
                         }
                         System.out.println("Message details are\n\tFROM: " +inMessage.getSource() +

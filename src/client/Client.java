@@ -17,7 +17,7 @@ import messages.*;
 
 public class Client {
 
-    public static final String HOST_NAME = "10.0.0.9";
+    public static final String HOST_NAME = "172.28.117.89";
     public static final int HOST_PORT = 8889; // host port number
     public static final String CLIENT = "Joe";
     protected Socket socket;
@@ -39,7 +39,9 @@ public class Client {
 
         // open socket & start input/output stream threads
         try {
+            System.out.println("start client entered");
             socket = new Socket(HOST_NAME, HOST_PORT);
+            System.out.println("new socket made");
         } 
         catch (IOException e) {
             System.out.println("client could not make connection: " + e);

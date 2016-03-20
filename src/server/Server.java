@@ -133,7 +133,11 @@ System.out.println("ois created");
                     if(currentMessage instanceof IdMessage){
                         clientAdded = newClientHandler((IdMessage)currentMessage);
                         System.out.println("\tclientAdded boolean = " + clientAdded);
+                        
                         // return clientAdded (success flag) to the client.
+                        SuccessMessage succMsg = new SuccessMessage(currentMessage.getSource(), clientAdded);
+                        OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(currentMessage.getSource())[OUT_THREAD];
+                        outThread.sendMessage(succMsg);
                     }
 
                     // Disconnect to close connection
@@ -172,8 +176,7 @@ System.out.println("server received a ToMessage");
             }
             else{
                 // find outbound thread of destination client & send
-                //OutwardsMessageThread outThread = (OutputStreamRunnable)clientList.get(dest)[OUT_THREAD];
-                OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get("Joe")[OUT_THREAD];
+                OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(dest)[OUT_THREAD];
                 outThread.sendMessage(inMsg);
                 System.out.println("\tThe message is from: "+ dest +
                                     "\n\tand the message is: " + inMsg.getMessageBody());
@@ -192,6 +195,9 @@ System.out.println("server received a ToMessage");
         private boolean disconnectMessageHandler(DisconnectMessage disMsg) {
             System.out.println("server received a DisconnectMessage");
             String client = disMsg.getSource();
+            
+            OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(client)[OUT_THREAD];
+            outThread.close();    
             if(clientList.containsKey(client)){
                 clientList.remove(client);
                 return true;
@@ -220,9 +226,6 @@ System.out.println("server received an IdMessage");
                 clientList.put(clientName, threadArray);
                 System.out.println("\tthe source of the IdMessage is: " + clientName);
                 
-                //test script only
-//                OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get("Joe")[OUT_THREAD];
-//                outThread.sendMessage(newMsg);
                 return true;
             }
         }
@@ -254,19 +257,28 @@ System.out.println("server received an IdMessage");
             try{
                 oos.writeObject(msg);
                 oos.flush();
-                System.out.println("wrote msg to: " + msg.getSource());
+                System.out.println("wrote msg to: " + msg.getDestination());
             }
             catch(IOException e){
                 System.out.println("Problem sending message: " +e.getMessage());
             }
             
             // test code only, oos should be closed after a disconnect message
+//            try{
+//                oos.close();
+//                System.out.println("and closed oos");
+//            }
+//            catch(IOException e){
+//                System.out.println("issue closing output stream: " +e.getMessage());
+//            }
+        }
+        
+        public void close(){
             try{
                 oos.close();
-                System.out.println("and closed oos");
             }
             catch(IOException e){
-                System.out.println("issue closing output stream: " +e.getMessage());
+                System.out.println("Error closing oos: " + e.getMessage());
             }
         }
     }

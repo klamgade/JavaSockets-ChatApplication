@@ -162,6 +162,7 @@ public class ClientGUI extends JPanel {
                     if (connected) { //If already connected & want to disconnect
                         connectionButton.setText("CONNECT");
                         connectionStatusLabel.setText(CONNECT_MESSAGE + "Disconnected");
+ System.out.println("sending DisconnectMessage to server");
                         connection.sendMessage(new DisconnectMessage(userName));
 
                     }
@@ -170,12 +171,21 @@ public class ClientGUI extends JPanel {
                         connection.startClient();
                         boolean clientAdded = false;
                         //get users desired name & request it of the server
-                        while(!clientAdded){
+                        while(!clientAdded && userName!=null){
                             userName = (String) JOptionPane.showInputDialog("Enter your Username");
                             IdMessage idMessage = new IdMessage(userName);
 
                             if(connection.isConnected()){
+   System.out.println("sending IDMessage, client is: " + idMessage.getSource());
                                 connection.sendMessage(idMessage);
+        // Need to pause for server to respond
+        try{
+            Thread.sleep(500);
+        }
+        catch(InterruptedException ex){
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("checkMessageSuccess= " + connection.checkMessageSuccess());
                                 if(connection.checkMessageSuccess()){
                                     JOptionPane.showMessageDialog(null, "Yey!! User" + idMessage.getSource() + "is connected.");
                                     connectionButton.setText("DISCONNECT");

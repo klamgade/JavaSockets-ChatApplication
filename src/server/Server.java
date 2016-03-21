@@ -78,12 +78,12 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
     }
     
     /**
-     * Thread which handles incoming messages from the client
+     * Used to manage the ObjectInputStream, including opening, closing & inbound message handling
      */
     private class InputStreamRunnable implements Runnable{ //implements Runnable{
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
-        private boolean clientAdded, msgReceived;
+        private boolean clientAdded;
         private ObjectInputStream inStream;
         private Runnable[] threadArray;
         
@@ -91,7 +91,6 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
             socket = s;
             threadConnected = false;
             clientAdded = false;
-            msgReceived = false;
             inStream = null;
             threadArray = new Thread[2];
         }
@@ -124,9 +123,7 @@ System.out.println("ois created");
                     }
                     // ToMessage to be passed to another client
                     else if(currentMessage instanceof ToMessage){
-                    
-                        msgReceived = toMessageHandler((ToMessage)currentMessage);
-                        System.out.println("\tsuccessful toMessage = " + msgReceived);
+                        toMessageHandler((ToMessage)currentMessage);
                     }
 
                     // IdMessage to create a new client
@@ -143,9 +140,7 @@ System.out.println("ois created");
                     // Disconnect to close connection
                     if(currentMessage instanceof DisconnectMessage){
                         threadConnected = !disconnectMessageHandler((DisconnectMessage)currentMessage);
-                        
                     }
-                    
                 }
             }
             try{
@@ -156,6 +151,10 @@ System.out.println("ois created");
             }
         }
 
+        /**
+         * Passes an array of in- and outstreams to the input stream
+         * @param array shall contain an input stream runnable at location 0 and an output stream runnable at location 1
+         */
         public void passArray(Runnable[] array){
             threadArray = array;
         }
@@ -165,22 +164,19 @@ System.out.println("ois created");
          * @param inMsg the ToMessage object which shall be passed to the destination client
          * @return false if the destination client does not exist
          */
-        private boolean toMessageHandler(ToMessage inMsg) {
+        private void toMessageHandler(ToMessage inMsg) {
 System.out.println("server received a ToMessage");
             String src = inMsg.getSource();
             String dest = inMsg.getDestination();
             
-            if(!clientList.containsKey(src)){
-                System.out.println("This client doesn't exist");
-                return false;
-            }
-            else{
+            if(clientList.containsKey(src)){
                 // find outbound thread of destination client & send
                 OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(dest)[OUT_THREAD];
+                //OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(src)[OUT_THREAD];  //for testing
                 outThread.sendMessage(inMsg);
-                System.out.println("\tThe message is from: "+ dest +
+                System.out.println("\tfrom: "+ src +
+                                    "\tto: " + dest +
                                     "\n\tand the message is: " + inMsg.getMessageBody());
-                return true;
             }
         }
 
@@ -192,13 +188,18 @@ System.out.println("server received a ToMessage");
             System.out.println("server received a BroadcastMessage");
         }
 
+        /**
+         * Closes ObjectOutputStream for the source client and removes client from the clientList
+         * @param disMsg the message containing details of the client to be disconnected
+         * @return false if source of disMsg is not in the list, true if the source is removed from clientList and the output stream is closed
+         */
         private boolean disconnectMessageHandler(DisconnectMessage disMsg) {
             System.out.println("server received a DisconnectMessage");
             String client = disMsg.getSource();
             
-            OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(client)[OUT_THREAD];
-            outThread.close();    
             if(clientList.containsKey(client)){
+                OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(client)[OUT_THREAD];
+                outThread.close();
                 clientList.remove(client);
                 return true;
             }
@@ -232,6 +233,9 @@ System.out.println("server received an IdMessage");
      
     }
     
+    /**
+     * Used to manage the OutputObjectStream including opening, writing & closing
+     */
     private class OutputStreamRunnable implements Runnable{
         private Socket socket;
         private ObjectOutputStream oos;
@@ -253,6 +257,10 @@ System.out.println("server received an IdMessage");
             }
         }
         
+        /**
+         * Sends message along the output stream
+         * @param msg Message to be sent.
+         */
         public void sendMessage(Message msg){
             try{
                 oos.writeObject(msg);
@@ -262,17 +270,11 @@ System.out.println("server received an IdMessage");
             catch(IOException e){
                 System.out.println("Problem sending message: " +e.getMessage());
             }
-            
-            // test code only, oos should be closed after a disconnect message
-//            try{
-//                oos.close();
-//                System.out.println("and closed oos");
-//            }
-//            catch(IOException e){
-//                System.out.println("issue closing output stream: " +e.getMessage());
-//            }
         }
         
+        /**
+         * Closes the ObjectOutputStream
+         */
         public void close(){
             try{
                 oos.close();

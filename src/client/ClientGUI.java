@@ -206,11 +206,10 @@ public class ClientGUI extends JPanel {
                 }
                 
                 if(source == sendButton){
-                    chatDisplay.setText("From Kamal: Hi! What are you up to?" +
-                                        "\n\nTo Kamal: not much" +
-                                        "\n\nTo ALL: everyone stop!!");
-                    ToMessage currentMessage = new ToMessage(userName, destination, "Hello!! how are u ?");
+                    String str = "Hello, how are you?";
+                    ToMessage currentMessage = new ToMessage(userName, destination, str);
                     connection.sendMessage(currentMessage);
+                    chatDisplay.setText(userName + ": " + str);
                 }
         }
         
@@ -347,7 +346,8 @@ public class ClientGUI extends JPanel {
                             
                             if(inMessage instanceof ToMessage){
                                 ToMessage msg = (ToMessage)inMessage;
-                                chatDisplay.setText(msg.getMessageBody());
+                                String displayText = msg.getSource() + ": " + msg.getMessageBody();
+                                chatDisplay.setText(displayText);
                             
                             System.out.println("Received a ToMessage\n\tFROM: " +msg.getSource() +
                                                 "\n\tTO: " + msg.getDestination() +

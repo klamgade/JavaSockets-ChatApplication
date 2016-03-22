@@ -134,6 +134,7 @@ System.out.println("ois created");
                         // return clientAdded (success flag) to the client.
                         SuccessMessage succMsg = new SuccessMessage(currentMessage.getSource(), clientAdded);
                         OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(currentMessage.getSource())[OUT_THREAD];
+                        System.out.println("about to send a success msg");
                         outThread.sendMessage(succMsg);
                     }
 

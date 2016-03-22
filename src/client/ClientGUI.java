@@ -204,13 +204,21 @@ public class ClientGUI extends JPanel {
                     }
                     connected = !connected;
                 }
-                
-                if(source == sendButton){
-                    String str = "Hello, how are you?";
-                    ToMessage currentMessage = new ToMessage(userName, destination, str);
-                    connection.sendMessage(currentMessage);
-                    chatDisplay.setText(userName + ": " + str);
+            
+            if (source == sendButton || source == bcastButton) {
+                Message newMessage;
+                String msgText = chatInputField.getText();
+                if ((msgText != null) && (!msgText.equals(""))) {
+                    msgText = userName + ":" + msgText;
+                    if(source == sendButton)
+                    newMessage = new ToMessage(userName, destination, msgText);
+                    newMessage = new BroadcastMessage(userName, msgText);
+                    connection.sendMessage(newMessage);
+                    chatDisplay.setText(userName + ": " + msgText);
+                    chatInputField.setText("");
                 }
+
+            }
         }
         
         /*********************************************************************************

@@ -171,7 +171,7 @@ System.out.println("server received a ToMessage");
             String src = inMsg.getSource();
             String dest = inMsg.getDestination();
             
-            if(clientList.containsKey(src)){
+            if(clientList.containsKey(dest)){
                 // find outbound thread of destination client & send
                 OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(dest)[OUT_THREAD];
                 //OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(src)[OUT_THREAD];  //for testing

@@ -18,7 +18,7 @@ import messages.ToMessage;
 public class Client {
 
     //protected final String HOST_NAME = "172.28.117.89";
-    protected final String HOST_NAME = "localhost";
+    protected final String HOST_NAME = "10.0.0.11";
     protected final int HOST_PORT = 8889; // host port number
     protected Socket socket;
     protected boolean connected, waitingSuccessMsg;

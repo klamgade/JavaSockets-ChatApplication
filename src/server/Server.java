@@ -56,14 +56,15 @@ System.out.println("IN startServer().try#1 : server started, connected = " + ssC
         }
         
         // Pass incoming clients to new threads
-        while(ssConnected){
-            try{
+        while (ssConnected) {
+            try {
+                System.out.println("about to block incoming clients");
                 Socket socket = serverSocket.accept();
-//System.out.println("Connection made with " + socket.getInetAddress());
+                System.out.println("Connection made with " + socket.getInetAddress());
                 InputStreamRunnable inStream = new InputStreamRunnable(socket);
                 OutputStreamRunnable outStream = new OutputStreamRunnable(socket);
-                
-                Runnable[] threadArray = new Runnable[]{inStream, outStream};
+
+                Runnable[] threadArray = new Runnable[]{inStream,outStream};
                 inStream.passArray(threadArray);
                 
                 Thread inThread = new Thread(inStream);

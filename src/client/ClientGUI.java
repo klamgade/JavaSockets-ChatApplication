@@ -13,10 +13,7 @@ import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -56,10 +53,10 @@ public class ClientGUI extends JPanel {
         bcastButton = new JButton("Broadcast");
         sendButton = new JButton("SEND");
 
-        clientListModel = new DefaultListModel<String>();
+        clientListModel = new DefaultListModel<>();
         clientListModel.addElement("Kamal");
         clientListModel.addElement("Sez");
-        clientList = new JList<String>(clientListModel);
+        clientList = new JList<>(clientListModel);
         clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         clientList.setFixedCellWidth(50);
 
@@ -157,6 +154,7 @@ public class ClientGUI extends JPanel {
         /*********************************************************************************
 	BUTTON EVENTS
 	*******************************************************************************/
+         @Override
         public void actionPerformed(ActionEvent e)
         {
                 Object source = e.getSource();
@@ -231,6 +229,7 @@ public class ClientGUI extends JPanel {
         /*********************************************************************************
 	JLIST SELECTION EVENTS
 	*******************************************************************************/
+         @Override
         public void valueChanged(ListSelectionEvent e)
         {
             if (!e.getValueIsAdjusting() && !clientList.isSelectionEmpty())
@@ -245,6 +244,16 @@ public class ClientGUI extends JPanel {
     
     public void updateMessageDisplay(String msg){
         chatDisplay.append(msg);
+    }
+    
+    public void updateClientList(String[] newList){
+        clientListModel = new DefaultListModel<>();
+        
+        for(String str : newList){
+            clientListModel.addElement(str);
+        }
+        clientList = new JList<>(clientListModel);
+        repaint();
     }
     
     public static void main(String[] args) {

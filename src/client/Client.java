@@ -1,47 +1,60 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ *  DMS S1 2016 ASSIGNMENT 1
+ *  Kamal Lamgade & Sez Prouting
+ * 
+ * A class which acts as a client, to forward messages to and receive messages from the server.
+ * Incoming message content is passed to the GUI for display
+ * 
+ * @author Kamal & Sez
  */
 package client;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.net.Socket;
-import messages.DisconnectMessage;
-import messages.IdMessage;
-import messages.Message;
-import messages.SuccessMessage;
-import messages.ToMessage;
+import java.net.UnknownHostException;
+import java.util.Set;
+import messages.*;
 
 public class Client {
 
-    //protected final String HOST_NAME = "172.28.117.89";
-    protected final String HOST_NAME = "10.0.0.11";
-    protected final int HOST_PORT = 8889; // host port number
-    protected Socket socket;
+    //protected final String TCP_HOST = "172.28.117.89";
+    protected final String TCP_HOST = "10.0.0.11";
+    protected final String UDP_HOST = "10.0.0.0";
+    protected final int TCP_PORT = 8889; // TCP host port number
+    protected final int UDP_PORT = 8888; // UDP host port number
+    protected Socket tcpSocket;
+    protected MulticastSocket udpSocket;
     protected boolean connected, waitingSuccessMsg;
     private InputStreamRunnable inputStream;
     private OutputStreamRunnable outputStream;
-    private ClientGUI cGUI;
+    private UDP_Runnable udpStream;
+    private ClientGUI clientGUI;
 
 
     public Client(ClientGUI gui) {
-        socket = null;
+        tcpSocket = null;
+        udpSocket = null;
         connected = false;
         waitingSuccessMsg = false;
         inputStream = null;
         outputStream = null;
-        cGUI = gui;
+        udpStream = null;
+        clientGUI = gui;
     }
 
     public void startClient() {
 
-        // open socket & start input/output stream threads
+        // open tcpSocket & start input/output stream threads
         try {
             System.out.println("start client entered");
-            socket = new Socket(HOST_NAME, HOST_PORT);
+            tcpSocket = new Socket(TCP_HOST, TCP_PORT);
+            udpSocket = new MulticastSocket(UDP_PORT);
            System.out.println("new socket made");
         } 
         catch (IOException e) {
@@ -49,17 +62,21 @@ public class Client {
             System.exit(-1);
         }
        finally{
-            inputStream = new InputStreamRunnable(socket);
-            outputStream = new OutputStreamRunnable(socket);
+            inputStream = new InputStreamRunnable(tcpSocket);
+            outputStream = new OutputStreamRunnable(tcpSocket);
+            udpStream = new UDP_Runnable(udpSocket);
 
             Thread in = new Thread(inputStream);
             Thread out = new Thread(outputStream);
+            Thread udp = new Thread(udpStream);
 
             in.start();
             out.start();
+            udp.start();
 
-            if(in.isAlive() && out.isAlive())
+            if(in.isAlive() && out.isAlive() && udp.isAlive())
                 connected = true;
+            else System.out.println("One or more of the input/output streams did not start");
         }
     }
 
@@ -139,7 +156,7 @@ public class Client {
                             ToMessage msg = (ToMessage)inMessage;
                             //String displayText = msg.getSource() + ": " + msg.getMessageBody();
                             //chatDisplay.setText(displayText);
-                            cGUI.updateMessageDisplay(msg.getMessageBody());
+                            clientGUI.updateMessageDisplay(msg.getMessageBody());
                             
                         
                         System.out.println("Received a ToMessage\n\tFROM: " +msg.getSource() +
@@ -181,7 +198,7 @@ public class Client {
 
         @Override
         public void run(){
-            // obtaining streams from socket and layering with appopriate filtering streams
+            // obtaining streams from tcpSocket and layering with appopriate filtering streams
             try{
                  oos= new ObjectOutputStream(socket.getOutputStream());
                  oos.flush();
@@ -221,6 +238,63 @@ public class Client {
             }
             catch(IOException e){
                 System.out.println(e.getMessage());
+            }
+        }
+    }
+    
+    private class UDP_Runnable implements Runnable{
+        private MulticastSocket socket;
+        private ObjectInputStream udp_ois;
+        private boolean udpIsConnected;
+        
+        public UDP_Runnable(MulticastSocket socket){
+            this.socket = socket;
+            udpIsConnected = false;
+            
+            try{
+                InetAddress group = InetAddress.getByName(UDP_HOST);
+                socket.joinGroup(group);
+            }
+            catch(IOException e){
+                
+            }
+            finally {udpIsConnected = true;}
+        }
+        
+        @Override
+        public void run(){
+            String[] clientList = null;
+            byte[] buffer = new byte[10000];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            
+            while(udpIsConnected){
+                try{
+ System.out.println("udp client is ready to Rx");
+                    socket.receive(packet);
+ System.out.println("a udp packet has been received");
+                    udp_ois = new ObjectInputStream(new ByteArrayInputStream(buffer));
+                    clientList = (String[])udp_ois.readObject();
+ System.out.println("\nlist of clients received by Client.java:");
+ for(String s : clientList)                   
+ System.out.println(s);
+                }
+                catch(IOException | ClassNotFoundException e){
+                    System.out.println("Trouble receiving UDP packets"+ e.getMessage());
+                }
+                finally{
+                    clientGUI.updateClientList(clientList);
+                }
+            }
+        }
+        
+        public void close(){
+            try{
+                udp_ois.close();
+            }catch(IOException e){
+                System.out.println("could not close UDP ois stream: " + e.getMessage());
+            }
+            finally{
+                udpIsConnected = false;
             }
         }
     }

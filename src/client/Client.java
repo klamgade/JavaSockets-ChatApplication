@@ -17,14 +17,12 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Set;
 import messages.*;
 
 public class Client {
 
     //protected final String TCP_HOST = "172.28.117.89";
-    protected final String TCP_HOST = "10.0.0.11";
+    protected final String TCP_HOST = "10.0.0.4";
     protected final String UDP_HOST = "10.0.0.0";
     protected final int TCP_PORT = 8889; // TCP host port number
     protected final int UDP_PORT = 8888; // UDP host port number
@@ -54,30 +52,30 @@ public class Client {
         try {
             System.out.println("start client entered");
             tcpSocket = new Socket(TCP_HOST, TCP_PORT);
+            System.out.println("tcp socket created");
             udpSocket = new MulticastSocket(UDP_PORT);
-           System.out.println("new socket made");
+            System.out.println("udp socket made");
         } 
+        
         catch (IOException e) {
-            System.out.println("client could not make connection: " + e);
+            System.out.println("client could not make connection: " + e.getMessage());
             System.exit(-1);
         }
-       finally{
-            inputStream = new InputStreamRunnable(tcpSocket);
-            outputStream = new OutputStreamRunnable(tcpSocket);
-            udpStream = new UDP_Runnable(udpSocket);
+        inputStream = new InputStreamRunnable(tcpSocket);
+        outputStream = new OutputStreamRunnable(tcpSocket);
+        udpStream = new UDP_Runnable(udpSocket);
 
-            Thread in = new Thread(inputStream);
-            Thread out = new Thread(outputStream);
-            Thread udp = new Thread(udpStream);
+        Thread in = new Thread(inputStream);
+        Thread out = new Thread(outputStream);
+        Thread udp = new Thread(udpStream);
 
-            in.start();
-            out.start();
-            udp.start();
+        in.start();
+        out.start();
+        udp.start();
 
-            if(in.isAlive() && out.isAlive() && udp.isAlive())
-                connected = true;
-            else System.out.println("One or more of the input/output streams did not start");
-        }
+        if(in.isAlive() && out.isAlive() && udp.isAlive())
+            connected = true;
+        else System.out.println("One or more of the input/output streams did not start");
     }
 
     /**
@@ -143,7 +141,6 @@ public class Client {
                 catch(IOException | ClassNotFoundException e){
                     System.out.println("Error reading message: " +e.getMessage());
                 }
-                finally{
                     if(inMessage != null){
                         if((inMessage instanceof SuccessMessage) && waitingSuccessMsg){
                             SuccessMessage succMsg = (SuccessMessage)inMessage;
@@ -163,8 +160,8 @@ public class Client {
                                             "\n\tTO: " + msg.getDestination() +
                                             "\n\tBODY: " + msg.getMessageBody());
                         }
-                    }
                 }
+                    Thread.yield();
             }
         }
 
@@ -256,23 +253,26 @@ public class Client {
                 socket.joinGroup(group);
             }
             catch(IOException e){
-                
+                System.out.println("Could not join group" + e.getMessage());
             }
-            finally {udpIsConnected = true;}
+            udpIsConnected = true;
         }
         
         @Override
         public void run(){
+            System.out.println("udp thread is running");
             String[] clientList = null;
             byte[] buffer = new byte[10000];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             
             while(udpIsConnected){
+                System.out.println("udp is connected, about to try reception");
                 try{
  System.out.println("udp client is ready to Rx");
                     socket.receive(packet);
  System.out.println("a udp packet has been received");
                     udp_ois = new ObjectInputStream(new ByteArrayInputStream(buffer));
+                    System.out.println("number of udp bytes available: " + udp_ois.available());
                     clientList = (String[])udp_ois.readObject();
  System.out.println("\nlist of clients received by Client.java:");
  for(String s : clientList)                   
@@ -281,9 +281,8 @@ public class Client {
                 catch(IOException | ClassNotFoundException e){
                     System.out.println("Trouble receiving UDP packets"+ e.getMessage());
                 }
-                finally{
                     clientGUI.updateClientList(clientList);
-                }
+                    Thread.yield();
             }
         }
         

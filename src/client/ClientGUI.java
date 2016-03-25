@@ -10,21 +10,14 @@
 package client;
 
 import java.awt.*;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import messages.*;
 
 public class ClientGUI extends JPanel {
-    
-    private final JLabel TITLE;
     private final String CONNECT_MESSAGE="Connected as: ";
     private MainInfoPanel mainInfoPanel;
     private ChatDisplayPanel chatPanel;
@@ -32,8 +25,7 @@ public class ClientGUI extends JPanel {
     private ListenerGroup listener;
     private JLabel connectionStatusLabel;
     private JButton connectionButton, bcastButton, sendButton;
-    private JTextArea chatDisplay;
-    private JTextField chatInputField;
+    private JTextArea chatDisplay, chatInputField;
     private JList clientList;
     private DefaultListModel<String> clientListModel;
     private Client connection;
@@ -57,20 +49,23 @@ public class ClientGUI extends JPanel {
         sendButton = new JButton("SEND");
 
         clientListModel = new DefaultListModel<String>();
-        clientListModel.addElement("Kamal");
-        clientListModel.addElement("Sez");
+            clientListModel.addElement("Kamal");
+            clientListModel.addElement("Sez");
         clientList = new JList<String>(clientListModel);
-        clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        clientList.setFixedCellWidth(50);
+            clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            clientList.setFixedCellWidth(50);
 
         
         chatDisplay = new JTextArea();
-        chatDisplay.setText("Kamal: Hi! What are you up to");
-        chatDisplay.setEditable(false);
-        chatDisplay.setWrapStyleWord(true);
-        chatInputField = new JTextField("Start typing...");
-        chatInputField.selectAll();
-        chatInputField.addActionListener(listener);
+            chatDisplay.setText("Kamal: Hi! What are you up to");
+            chatDisplay.setEditable(false);
+            chatDisplay.setLineWrap(true);
+            chatDisplay.setWrapStyleWord(true);
+        chatInputField = new JTextArea("Start typing...");
+            chatInputField.selectAll();
+            chatInputField.setLineWrap(true);
+            chatInputField.setWrapStyleWord(true);
+            chatInputField.setEditable(true);
 
         // Add listeners
         connectionButton.addActionListener(listener);
@@ -81,20 +76,14 @@ public class ClientGUI extends JPanel {
      
         // Set Look, Feel & Starting characteristics
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-//        setLayout(new BorderLayout());
-        TITLE = new JLabel("Kamasez Chat Manager", JLabel.CENTER);
-        TITLE.setFont(new Font("Serif", Font.BOLD, 18));
         mainInfoPanel = new MainInfoPanel();
         chatPanel = new ChatDisplayPanel();
         mainInfoPanel.setBorder(BorderFactory.createEtchedBorder());
-        chatPanel.setBorder(BorderFactory.createTitledBorder("Your conversation"));
 
         //Add components
             add(mainInfoPanel);
             add(Box.createRigidArea(new Dimension(0,20)));
             add(chatPanel);
-        //add(mainInfoPanel, BorderLayout.CENTER);
-        //add(chatPanel, BorderLayout.EAST);
         
         connection = new Client(this);
     }
@@ -104,9 +93,9 @@ public class ClientGUI extends JPanel {
         
         public MainInfoPanel(){
             super();
-            setLayout(new BorderLayout());
-            add(new SubInfoPanel(), BorderLayout.CENTER);
-            add(new ConnectPanel(), BorderLayout.SOUTH);
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            add(new SubInfoPanel());
+            add(new ConnectPanel());
         }
         
     }
@@ -114,9 +103,12 @@ public class ClientGUI extends JPanel {
     private class SubInfoPanel extends JPanel{
         public SubInfoPanel(){
             super();
+            JScrollPane clientScrollPane = new JScrollPane(clientList);
+                clientScrollPane.setBorder(BorderFactory.createTitledBorder("Online right now:"));
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             add(connectionStatusLabel);
-            add(new JScrollPane(clientList));
+            add(Box.createRigidArea(new Dimension(0, 10)));
+            add(clientScrollPane);
             
         }
     }
@@ -131,11 +123,17 @@ public class ClientGUI extends JPanel {
     private class ChatDisplayPanel extends JPanel{
         public ChatDisplayPanel(){
             super();
+            JScrollPane chatDisplayScrollPane = new JScrollPane(chatDisplay);
+                chatDisplayScrollPane.setBorder(BorderFactory.createTitledBorder("Your conversation"));
+                chatDisplayScrollPane.setPreferredSize(new Dimension(200, 300));
+            JScrollPane chatInputScrollPane = new JScrollPane(chatInputField);
+                chatInputScrollPane.setPreferredSize(new Dimension(200, 100));
+                
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            add(new JScrollPane(chatDisplay));
+            add(chatDisplayScrollPane);
             add(Box.createRigidArea(new Dimension(0, 20)));
-            add(new JScrollPane(chatInputField));
-            add(new SendMsgPanel(), BorderLayout.SOUTH);
+            add(chatInputScrollPane);
+            add(new SendMsgPanel());
         }
     }
     
@@ -255,10 +253,10 @@ public class ClientGUI extends JPanel {
         frame.setSize(screenSize.width/3, screenSize.height/2);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(new ClientGUI());
-        //frame.pack();
+        frame.pack();
         frame.setLocation((screenSize.width/2) - (frame.getWidth()/2),
                 (screenSize.height/2) - (frame.getHeight()/2));
-        frame.setVisible(true);
+        frame.setVisible(true);    
     }
             
 }

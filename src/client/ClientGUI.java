@@ -15,6 +15,9 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 import javax.swing.text.Position;
 import messages.*;
 
@@ -60,12 +63,10 @@ public class ClientGUI extends JPanel {
 
         
         chatDisplay = new JTextArea();
-            chatDisplay.setText("Kamal: Hi! What are you up to");
             chatDisplay.setEditable(false);
             chatDisplay.setLineWrap(true);
             chatDisplay.setWrapStyleWord(true);
         chatInputField = new JTextArea("Start typing...");
-            chatInputField.selectAll();
             chatInputField.setLineWrap(true);
             chatInputField.setWrapStyleWord(true);
             chatInputField.setEditable(true);

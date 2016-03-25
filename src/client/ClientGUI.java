@@ -17,12 +17,14 @@ import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Position;
 import messages.*;
 
 public class ClientGUI extends JPanel {
     
     private final JLabel TITLE;
     private final String CONNECT_MESSAGE="Connected as: ";
+    private String clientName;
     private MainInfoPanel mainInfoPanel;
     private ChatDisplayPanel chatPanel;
     private boolean connected;
@@ -46,6 +48,7 @@ public class ClientGUI extends JPanel {
 
         //Instantiations
         connected = false;
+        clientName = "";
         listener = new ListenerGroup();
         connectionStatusLabel = new JLabel(CONNECT_MESSAGE + "Disconnected");
         
@@ -191,6 +194,7 @@ public class ClientGUI extends JPanel {
                                     JOptionPane.showMessageDialog(null, "Yey!! User" + idMessage.getSource() + "is connected.");
                                     connectionButton.setText("DISCONNECT");
                                     connectionStatusLabel.setText(CONNECT_MESSAGE + userName);
+                                    setClientName(userName);
                                     clientAdded = true;
                                 }
                                 else{
@@ -235,8 +239,8 @@ public class ClientGUI extends JPanel {
             if (!e.getValueIsAdjusting() && !clientList.isSelectionEmpty())
             {
                 destination = (String)clientListModel.elementAt(clientList.getSelectedIndex());
-                JOptionPane.showMessageDialog(null, "Value was changed to " + destination);
-                mainInfoPanel.requestFocusInWindow();
+              //  JOptionPane.showMessageDialog(null, "Value was changed to " + destination);
+              //  mainInfoPanel.requestFocusInWindow();
             }
         }
     }
@@ -246,14 +250,24 @@ public class ClientGUI extends JPanel {
         chatDisplay.append(msg);
     }
     
+    protected void setClientName(String clientName){
+        this.clientName = clientName;
+    }
+    
     public void updateClientList(String[] newList){
-        clientListModel = new DefaultListModel<>();
+        //clientListModel = new DefaultListModel<>();
+        String selected = (String)clientList.getSelectedValue();
+        clientListModel.clear();
         
         for(String str : newList){
-            clientListModel.addElement(str);
+            if(!str.equals(clientName))
+                clientListModel.addElement(str);
         }
-        clientList = new JList<>(clientListModel);
-        repaint();
+        if (clientListModel.contains(selected))
+            clientList.setSelectedValue(selected,true);
+        //clientList = new JList<>(clientListModel);
+        //clientList.repaint();
+        //repaint();
     }
     
     public static void main(String[] args) {

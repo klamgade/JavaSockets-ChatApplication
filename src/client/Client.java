@@ -22,7 +22,7 @@ import messages.*;
 public class Client {
 
     //protected final String TCP_HOST = "172.28.117.89";
-    protected final String TCP_HOST = "10.0.0.11";
+    protected final String TCP_HOST = "localhost";
     protected final String UDP_HOST = "224.0.0.3";
     protected final int TCP_PORT = 8889; // TCP host port number
     protected final int UDP_PORT = 8888; // UDP host port number

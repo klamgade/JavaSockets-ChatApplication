@@ -8,7 +8,6 @@
  */
 package server;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -19,20 +18,16 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import messages.*;
 
 public class Server {
 
     public static final int PORT = 8889;
-    protected final String UDP_HOST = "10.0.0.0";
+    protected final String UDP_HOST = "224.0.0.3";
     protected final int IN_THREAD = 0, OUT_THREAD = 1; // array locations for each client thread
     protected ServerSocket serverSocket;
     protected boolean ssConnected;  //connection status of serverSocket

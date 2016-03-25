@@ -57,8 +57,8 @@ public class ClientGUI extends JPanel {
         sendButton = new JButton("SEND");
 
         clientListModel = new DefaultListModel<>();
-        clientListModel.addElement("Kamal");
-        clientListModel.addElement("Sez");
+        //clientListModel.addElement("Kamal");
+        //clientListModel.addElement("Sez");
         clientList = new JList<>(clientListModel);
         clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         clientList.setFixedCellWidth(50);

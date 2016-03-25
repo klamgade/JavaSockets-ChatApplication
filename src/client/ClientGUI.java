@@ -15,10 +15,6 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Highlighter;
-import javax.swing.text.Position;
 import messages.*;
 
 public class ClientGUI extends JPanel {
@@ -66,7 +62,7 @@ public class ClientGUI extends JPanel {
             chatDisplay.setEditable(false);
             chatDisplay.setLineWrap(true);
             chatDisplay.setWrapStyleWord(true);
-        chatInputField = new JTextArea("Start typing...");
+        chatInputField = new JTextArea();
             chatInputField.setLineWrap(true);
             chatInputField.setWrapStyleWord(true);
             chatInputField.setEditable(true);
@@ -131,7 +127,8 @@ public class ClientGUI extends JPanel {
                 chatDisplayScrollPane.setBorder(BorderFactory.createTitledBorder("Your conversation"));
                 chatDisplayScrollPane.setPreferredSize(new Dimension(200, 300));
             JScrollPane chatInputScrollPane = new JScrollPane(chatInputField);
-                chatInputScrollPane.setPreferredSize(new Dimension(200, 100));
+                chatInputScrollPane.setPreferredSize(new Dimension(200, 150));
+                chatInputScrollPane.setBorder(BorderFactory.createTitledBorder("Type your message here:"));
                 
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             add(chatDisplayScrollPane);
@@ -193,7 +190,7 @@ public class ClientGUI extends JPanel {
         }
         System.out.println("checkMessageSuccess= " + connection.checkMessageSuccess());
                                 if(connection.checkMessageSuccess()){
-                                    JOptionPane.showMessageDialog(null, "Yey!! User" + idMessage.getSource() + "is connected.");
+                                    JOptionPane.showMessageDialog(null, "Yey!! User " + idMessage.getSource() + " is connected.");
                                     connectionButton.setText("DISCONNECT");
                                     connectionStatusLabel.setText(CONNECT_MESSAGE + userName);
                                     setClientName(userName);
@@ -214,7 +211,7 @@ public class ClientGUI extends JPanel {
                     String msgText = chatInputField.getText();
                     
                     if((msgText != null) && (!msgText.equals(""))){
-                        msgText = "\n" + userName + ": " + msgText;
+                        msgText = "\n\n" + userName + ": " + msgText;
                         
                         if(source == sendButton){
                             if(clientList.isSelectionEmpty())

@@ -91,6 +91,7 @@ public class Client {
         if(msg instanceof DisconnectMessage ){
             outputStream.close();
             inputStream.close();
+            udpStream.close();
             connected = false;
         }
     } 

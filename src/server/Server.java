@@ -90,6 +90,19 @@ public class Server {
                 System.out.println("There's a problem accepting the client socket Cx: " + e.getMessage());
             }
         }
+        try{
+            serverSocket.close();
+        }
+        catch(IOException e){
+            System.out.println("could not close the server socket" + e.getMessage());
+        }
+        
+    }
+    
+    
+    public void close(){
+        if(!clientMap.isEmpty())
+            ssConnected = false;
     }
 
     /**
@@ -161,6 +174,7 @@ public class Server {
             }
             try {
                 inStream.close();
+                socket.close();
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }

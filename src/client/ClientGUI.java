@@ -54,17 +54,17 @@ public class ClientGUI extends JPanel {
         clientListModel = new DefaultListModel<>();
 
         clientList = new JList<>(clientListModel);
-        clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        clientList.setFixedCellWidth(50);
+            clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            clientList.setFixedCellWidth(50);
 
         chatDisplay = new JTextArea();
-        chatDisplay.setEditable(false);
-        chatDisplay.setLineWrap(true);
-        chatDisplay.setWrapStyleWord(true);
+            chatDisplay.setEditable(false);
+            chatDisplay.setLineWrap(true);
+            chatDisplay.setWrapStyleWord(true);
         chatInputField = new JTextArea();
-        chatInputField.setLineWrap(true);
-        chatInputField.setWrapStyleWord(true);
-        chatInputField.setEditable(true);
+            chatInputField.setLineWrap(true);
+            chatInputField.setWrapStyleWord(true);
+            chatInputField.setEditable(true);
 
         // Add listeners
         connectionButton.addActionListener(listener);
@@ -125,10 +125,10 @@ public class ClientGUI extends JPanel {
             super();
             JScrollPane chatDisplayScrollPane = new JScrollPane(chatDisplay);
             chatDisplayScrollPane.setBorder(BorderFactory.createTitledBorder("Your conversation"));
-            chatDisplayScrollPane.setPreferredSize(new Dimension(200, 300));
+                chatDisplayScrollPane.setPreferredSize(new Dimension(200, 300));
             JScrollPane chatInputScrollPane = new JScrollPane(chatInputField);
             chatInputScrollPane.setPreferredSize(new Dimension(200, 150));
-            chatInputScrollPane.setBorder(BorderFactory.createTitledBorder("Type your message here:"));
+                chatInputScrollPane.setBorder(BorderFactory.createTitledBorder("Type your message here:"));
 
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
             add(chatDisplayScrollPane);
@@ -170,7 +170,6 @@ public class ClientGUI extends JPanel {
                 if (connected) { //If already connected & want to disconnect
                     connectionButton.setText("CONNECT");
                     connectionStatusLabel.setText(CONNECT_MESSAGE + "Disconnected");
-                    System.out.println("sending DisconnectMessage to server");
                     connection.sendMessage(new DisconnectMessage(userName));
                     JOptionPane.showMessageDialog(null, "You are Disconnected.");
 
@@ -185,15 +184,15 @@ public class ClientGUI extends JPanel {
                         IdMessage idMessage = new IdMessage(userName);
 
                         if (connection.isConnected()) {
-                            System.out.println("sending IDMessage, client is: " + idMessage.getSource());
                             connection.sendMessage(idMessage);
+                            
                             // Need to pause for server to respond
                             try {
                                 Thread.sleep(500);
                             } catch (InterruptedException ex) {
                                 Thread.currentThread().interrupt();
                             }
-                            System.out.println("checkMessageSuccess= " + connection.checkMessageSuccess());
+                            
                             if (connection.checkMessageSuccess()) {
                                 JOptionPane.showMessageDialog(null, "Yey!! User " + idMessage.getSource() + " is connected.");
                                 connectionButton.setText("DISCONNECT");
@@ -230,7 +229,6 @@ public class ClientGUI extends JPanel {
                     }
 
                     if (sendMessage) {
-                        System.out.println("about to send msg to: " + destination);
                         connection.sendMessage(newMessage);
                         chatDisplay.append(msgText);
                         chatInputField.setText("");
@@ -248,8 +246,6 @@ public class ClientGUI extends JPanel {
         public void valueChanged(ListSelectionEvent e) {
             if (!e.getValueIsAdjusting() && !clientList.isSelectionEmpty()) {
                 destination = (String) clientListModel.elementAt(clientList.getSelectedIndex());
-                //  JOptionPane.showMessageDialog(null, "Value was changed to " + destination);
-                //  mainInfoPanel.requestFocusInWindow();
             }
         }
     }
@@ -263,7 +259,6 @@ public class ClientGUI extends JPanel {
     }
 
     public void updateClientList(String[] newList) {
-        //clientListModel = new DefaultListModel<>();
         String selected = (String) clientList.getSelectedValue();
         clientListModel.clear();
 
@@ -275,9 +270,6 @@ public class ClientGUI extends JPanel {
         if (clientListModel.contains(selected)) {
             clientList.setSelectedValue(selected, true);
         }
-        //clientList = new JList<>(clientListModel);
-        //clientList.repaint();
-        //repaint();
     }
 
     public static void main(String[] args) {

@@ -1,6 +1,6 @@
 /**
  *  DMS S1 2016 ASSIGNMENT 1
- *  Kamal Lamgade & Sez Prouting
+ *  Kamal Lamgade[14845241] & Sez Prouting[0308852]
  * 
  * A class which acts as a client, to forward messages to and receive messages from the server.
  * Incoming message content is passed to the GUI for display
@@ -21,7 +21,6 @@ import messages.*;
 
 public class Client {
 
-    //protected final String TCP_HOST = "172.28.117.89";
     protected final String TCP_HOST = "localhost";
     protected final String UDP_HOST = "224.0.0.3";
     protected final int TCP_PORT = 8889; // TCP host port number
@@ -50,13 +49,9 @@ public class Client {
 
         // open tcpSocket & start input/output stream threads
         try {
-            System.out.println("start client entered");
             tcpSocket = new Socket(TCP_HOST, TCP_PORT);
-            System.out.println("tcp socket created");
             udpSocket = new MulticastSocket(UDP_PORT);
-            System.out.println("udp socket made");
         } 
-        
         catch (IOException e) {
             System.out.println("client could not make connection: " + e.getMessage());
             System.exit(-1);
@@ -82,7 +77,7 @@ public class Client {
     /**
      * Passes message to output thread for sending. Closes the in/out streams if the message
      * is an instance of DisconnectMessage
-     * @param msg the Message object which is to be sent to the server
+     * @param msg - the Message object which is to be sent to the server
      */
     public void sendMessage(Message msg){
         if(connected){
@@ -115,6 +110,10 @@ public class Client {
         return connected;
     }
 
+    /**
+     * Checks the inputStream for results of the last SuccessMessage
+     * @return the boolean value of the last SuccessMessage received
+     */
     public boolean checkMessageSuccess(){
         if(connected){
             return inputStream.getSuccess();
@@ -157,20 +156,12 @@ public class Client {
                         if((inMessage instanceof SuccessMessage) && waitingSuccessMsg){
                             SuccessMessage succMsg = (SuccessMessage)inMessage;
                             wasSuccessful = succMsg.getSuccess();
-   System.out.println("wasSuccessful = " + wasSuccessful);
                             waitingSuccessMsg = false;
                         }
 
                         if(inMessage instanceof ToMessage){
                             ToMessage msg = (ToMessage)inMessage;
-                            //String displayText = msg.getSource() + ": " + msg.getMessageBody();
-                            //chatDisplay.setText(displayText);
                             clientGUI.updateMessageDisplay(msg.getMessageBody());
-                            
-                        
-                        System.out.println("Received a ToMessage\n\tFROM: " +msg.getSource() +
-                                            "\n\tTO: " + msg.getDestination() +
-                                            "\n\tBODY: " + msg.getMessageBody());
                         }
                 }
                     Thread.yield();
@@ -190,6 +181,10 @@ public class Client {
             inStreamConnected = false;
         }
 
+        /**
+         * 
+         * @return the value of wasSuccessful
+         */
         public boolean getSuccess(){
             return wasSuccessful;
         }
@@ -211,7 +206,6 @@ public class Client {
             try{
                  oos= new ObjectOutputStream(socket.getOutputStream());
                  oos.flush();
-                 System.out.println("oos created");
             }
             catch(IOException e){
                 System.out.println("oos connection error : " +e);
@@ -226,7 +220,6 @@ public class Client {
             try{
                 oos.writeObject(msg);
                 oos.flush();
-                System.out.println("just wrote a msg to the server");
             }
             catch(IOException e){
                 System.out.println("Error while writing msg: " + e.getMessage());
@@ -272,23 +265,15 @@ public class Client {
         
         @Override
         public void run(){
-            System.out.println("udp thread is running");
             String[] clientList = null;
             byte[] buffer = new byte[10000];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             
             while(udpIsConnected){
-                System.out.println("udp is connected, about to try reception");
                 try{
- System.out.println("udp client is ready to Rx");
                     socket.receive(packet);
- System.out.println("a udp packet has been received");
                     udp_ois = new ObjectInputStream(new ByteArrayInputStream(buffer));
-                    System.out.println("number of udp bytes available: " + udp_ois.available());
                     clientList = (String[])udp_ois.readObject();
- System.out.println("\nlist of clients received by Client.java:");
- for(String s : clientList)                   
- System.out.println(s);
                 }
                 catch(IOException | ClassNotFoundException e){
                     System.out.println("Trouble receiving UDP packets"+ e.getMessage());
@@ -304,8 +289,7 @@ public class Client {
             }catch(IOException e){
                 System.out.println("could not close UDP ois stream: " + e.getMessage());
             }
-            
-                udpIsConnected = false;
+            udpIsConnected = false;
         }
     }
 }

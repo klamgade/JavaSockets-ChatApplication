@@ -1,6 +1,7 @@
 /**
  *  DMS S1 2016 ASSIGNMENT 1
- *  Kamal Lamgade & Sez Prouting
+ *  14845241 Kamal Lamgade
+ *  0308852 Sez Prouting
  *
  * A class which acts as a server, to manage chat messages between various clients
  *
@@ -18,7 +19,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,39 +28,33 @@ public class Server {
 
     public static final int PORT = 8889;
     protected final String UDP_HOST = "224.0.0.3";
-    protected final int IN_THREAD = 0, OUT_THREAD = 1; // array locations for each client thread
+    protected final int BC_WAIT_TIME = 1000; // pause time before rebroadcast
     protected ServerSocket serverSocket;
     protected UdpServer udpServer;
     protected boolean ssConnected;  //connection status of serverSocket
-    protected Map<String, Runnable[]> clientMap;   //list of clients by name & incomming thread
-
+    protected Map<String, OutputStreamRunnable> clientMap; //used to access output thread from the input thread
+    
     public Server() {
         ssConnected = false;
-        clientMap = new ConcurrentHashMap<String, Runnable[]>();
-        //FOR DEV: obtain local IP
-        try {
-            System.out.println(InetAddress.getLocalHost().getHostAddress());
-        } catch (UnknownHostException e) {
-            System.out.println(e.getMessage());
-        }
+        clientMap = new ConcurrentHashMap<>();
     }
 
     /**
-     * Creates a server socket & passes incoming clients to new threads
+     * Creates a TCP ServerSocket, a UDP DatagramSocket & passes incoming TCP clients to new threads
      */
     public void startServer() {
 
-        // Establish server socket
+        // Establish TCP ServerSocket
         try {
             serverSocket = new ServerSocket(PORT);
             serverSocket.setSoTimeout(30000);
             ssConnected = true;
-            System.out.println("IN startServer().try#1 : server started, connected = " + ssConnected);
         } catch (IOException e) {
             System.out.println("Socket Issue: " + e.getMessage());
             System.exit(-1);
         }
         
+        // Establish UDP DatagramSocket
         try{
             udpServer = new UdpServer(new DatagramSocket());
             Thread udpThread = new Thread(udpServer);
@@ -73,13 +67,11 @@ public class Server {
         // Pass incoming clients to new threads
         while (ssConnected) {
             try {
-                System.out.println("about to block incoming clients");
                 Socket socket = serverSocket.accept();
-                System.out.println("Connection made with " + socket.getInetAddress());
+                
                 InputStreamRunnable inStream = new InputStreamRunnable(socket);
                 OutputStreamRunnable outStream = new OutputStreamRunnable(socket);
-                Runnable[] threadArray = new Runnable[]{inStream, outStream};
-                inStream.passArray(threadArray);
+                inStream.passOutputThread(outStream); // so input stream can add output stream to the clientMap
 
                 Thread inThread = new Thread(inStream);
                 Thread outThread = new Thread(outStream);
@@ -87,20 +79,23 @@ public class Server {
                 outThread.start();
                 
             } catch (IOException e) {
-                System.out.println("There's a problem accepting the client socket Cx: " + e.getMessage());
+                System.out.println("Cannot accept new client: " + e.getMessage());
             }
         }
+        
+        // on server close:
         try{
             serverSocket.close();
             udpServer.close();
         }
         catch(IOException e){
-            System.out.println("could not close the server socket" + e.getMessage());
+            System.out.println("Cannot close one or more server sockets" + e.getMessage());
         }
-        
     }
     
-    
+    /**
+     * Closes safely closes the user socket only if there are no clients connected. Determined by entries in the clientMap
+     */
     public void close(){
         if(!clientMap.isEmpty())
             ssConnected = false;
@@ -110,69 +105,71 @@ public class Server {
      * Used to manage the ObjectInputStream, including opening, closing &
      * inbound message handling
      */
-    private class InputStreamRunnable implements Runnable { //implements Runnable{
+    private class InputStreamRunnable implements Runnable {
 
         private Socket socket;
         private boolean threadConnected;    // connection status of this thread
         private boolean clientAdded;
         private ObjectInputStream inStream;
-        private Runnable[] threadArray;
+        private OutputStreamRunnable outputThread;
 
         public InputStreamRunnable(Socket s) {
             socket = s;
             threadConnected = false;
             clientAdded = false;
             inStream = null;
-            threadArray = new Thread[2];
+            outputThread = null;
         }
 
+        /**
+         * Opens input streams and passes incoming messages to their various type handlers
+         */
+        @Override
         public void run() {
-            System.out.println("IN Connection.run(): client-server connction is running in a new thread");
             // Open stream
             try {
                 inStream = new ObjectInputStream(socket.getInputStream());
                 threadConnected = true;
-                System.out.println("ois created");
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
 
-            //read incoming messages
+            //read incoming messages until this thread is stopped
             while (threadConnected) {
                 Message currentMessage = null;
+                
                 try {
                     currentMessage = (Message) inStream.readObject();
-                } catch (IOException | ClassNotFoundException e) {
+                } 
+                catch (IOException | ClassNotFoundException e) {
                     System.out.println("Error reading message: " + e.getMessage());
-                } finally {
+                }
 
-                    // Broadcast to be passed to ALL clients
-                    if (currentMessage instanceof BroadcastMessage) {
-                        broadcastMessageHandler((BroadcastMessage) currentMessage);
-                    } 
-                    // ToMessage to be passed to another client
-                    else if (currentMessage instanceof ToMessage) {
-                        toMessageHandler((ToMessage) currentMessage);
-                    }
+                // Broadcast to be passed to ALL clients
+                if (currentMessage instanceof BroadcastMessage) {
+                    broadcastMessageHandler((BroadcastMessage) currentMessage);
+                } 
+                // ToMessage to be passed to another client
+                else if (currentMessage instanceof ToMessage) {
+                    toMessageHandler((ToMessage) currentMessage);
+                }
 
-                    // IdMessage to create a new client
-                    if (currentMessage instanceof IdMessage) {
-                        clientAdded = newClientHandler((IdMessage) currentMessage);
-                        System.out.println("\tclientAdded boolean = " + clientAdded);
+                // IdMessage to create a new client
+                if (currentMessage instanceof IdMessage) {
+                    clientAdded = newClientHandler((IdMessage) currentMessage);
 
-                        // return clientAdded (success flag) to the client.
-                        SuccessMessage succMsg = new SuccessMessage(currentMessage.getSource(), clientAdded);
-                        OutputStreamRunnable outThread = (OutputStreamRunnable) clientMap.get(currentMessage.getSource())[OUT_THREAD];
-                        System.out.println("about to send a success msg");
-                        outThread.sendMessage(succMsg);
-                    }
+                    // return clientAdded (success flag) to the client.
+                    SuccessMessage succMsg = new SuccessMessage(currentMessage.getSource(), clientAdded);
+                    clientMap.get(currentMessage.getSource()).sendMessage(succMsg);
+                }
 
-                    // Disconnect to close connection
-                    if (currentMessage instanceof DisconnectMessage) {
-                        threadConnected = !disconnectMessageHandler((DisconnectMessage) currentMessage);
-                    }
+                // Disconnect message will close the connection
+                if (currentMessage instanceof DisconnectMessage) {
+                    disconnectMessageHandler((DisconnectMessage) currentMessage);
                 }
             }
+            
+            
             try {
                 inStream.close();
                 socket.close();
@@ -184,45 +181,36 @@ public class Server {
         /**
          * Passes an array of in- and outstreams to the input stream
          *
-         * @param array shall contain an input stream runnable at location 0 and
-         * an output stream runnable at location 1
+         * @param osr - the output thread which is running on the same socket as this input thread
          */
-        public void passArray(Runnable[] array) {
-            threadArray = array;
+        public void passOutputThread(OutputStreamRunnable osr) {
+            outputThread = osr;
         }
 
         /**
          * Passes the incoming message to the destination client
          *
-         * @param inMsg the ToMessage object which shall be passed to the
+         * @param inMsg - the ToMessage object which shall be passed to the
          * destination client
          * @return false if the destination client does not exist
          */
         private void toMessageHandler(ToMessage inMsg) {
-            System.out.println("server received a ToMessage");
-            String src = inMsg.getSource();
             String dest = inMsg.getDestination();
 
             if (clientMap.containsKey(dest)) {
                 // find outbound thread of destination client & send
-                OutputStreamRunnable outThread = (OutputStreamRunnable) clientMap.get(dest)[OUT_THREAD];
-                //OutputStreamRunnable outThread = (OutputStreamRunnable)clientList.get(src)[OUT_THREAD];  //for testing
-                outThread.sendMessage(inMsg);
-                System.out.println("\tfrom: " + src
-                        + "\tto: " + dest
-                        + "\n\tand the message is: " + inMsg.getMessageBody());
+                clientMap.get(dest).sendMessage(inMsg);
             }
         }
 
         /**
          * Passes the incoming message to all clients which are connected to the
-         * server
+         * server, except the client which originated the message
          *
-         * @param msg the BroadcastMessage object which shall be broadcast to
+         * @param msg - the BroadcastMessage object which shall be broadcast to
          * all clients
          */
         private void broadcastMessageHandler(BroadcastMessage bcMsg) {
-            System.out.println("server received a BroadcastMessage");
             ToMessage toMsg = null;
             Set<String> clientSet = clientMap.keySet();
             String source = bcMsg.getSource();
@@ -237,25 +225,20 @@ public class Server {
         }
 
         /**
-         * Closes ObjectOutputStream for the source client and removes client
-         * from the clientList
+         * Closes client streams and removes client from the clientMap
          *
-         * @param disMsg the message containing details of the client to be
+         * @param disMsg - the message containing details of the client to be
          * disconnected
          * @return false if source of disMsg is not in the list, true if the
          * source is removed from clientList and the output stream is closed
          */
-        private boolean disconnectMessageHandler(DisconnectMessage disMsg) {
-            System.out.println("server received a DisconnectMessage");
+        private void disconnectMessageHandler(DisconnectMessage disMsg) {
             String client = disMsg.getSource();
 
-            if (clientMap.containsKey(client)) {
-                OutputStreamRunnable outThread = (OutputStreamRunnable) clientMap.get(client)[OUT_THREAD];
-                outThread.close();
+            if (clientMap.containsKey(client)) {                
+                clientMap.get(client).close();
+                threadConnected = false;
                 clientMap.remove(client);
-                return true;
-            } else {
-                return false;
             }
         }
 
@@ -264,25 +247,21 @@ public class Server {
          * already exist in the Server's list, the server will add the new
          * client.
          *
-         * @param newMsg provides the client name which will be added to the
+         * @param newMsg - provides the client name which will be added to the
          * client list
          * @return false if there is already a client by that name in the
          * server's client list
          */
         private boolean newClientHandler(IdMessage newMsg) {
-            System.out.println("server received an IdMessage");
             //extract client name
             String clientName = newMsg.getSource();
 
             // check if name is already taken
             if (clientMap.containsKey(clientName)) {
-                System.out.println("we already have that client");
                 return false;
             } else {
                 //add this input thread to the thread appay in the client map
-                clientMap.put(clientName, threadArray);
-                System.out.println("\tthe source of the IdMessage is: " + clientName);
-
+                clientMap.put(clientName, outputThread);
                 return true;
             }
         }
@@ -303,27 +282,28 @@ public class Server {
             oos = null;
         }
 
+        /**
+         * Opens output streams and sends messages to server
+         */
         public void run() {
 
             try {
                 oos = new ObjectOutputStream(socket.getOutputStream());
                 oos.flush();
-                System.out.println("oos created");
             } catch (IOException e) {
                 System.out.println("Error making output stream: " + e.getMessage());
             }
         }
 
         /**
-         * Sends message along the output stream
+         * Sends any message which extends the Message class to the server
          *
-         * @param msg Message to be sent.
+         * @param msg - Message to be sent.
          */
         public void sendMessage(Message msg) {
             try {
                 oos.writeObject(msg);
                 oos.flush();
-                System.out.println("wrote msg to: " + msg.getDestination());
             } catch (IOException e) {
                 System.out.println("Problem sending message: " + e.getMessage());
             }
@@ -341,20 +321,25 @@ public class Server {
         }
     }
 
+    /**
+     * Broadcasts the list of currently connected clients
+     */
     private class UdpServer implements Runnable {
         
         private DatagramSocket socket;
-        //private OutputStream udp_oos;
         private boolean udpInConnection;
         private InetAddress group;
 
+        /**
+         * 
+         * @param socket - UDP socket on which the client list will be broadcast
+         */
         public UdpServer(DatagramSocket socket) {
             this.socket = socket;
             udpInConnection = false;
             
             try{
                 group = InetAddress.getByName(UDP_HOST);
-                
             }
             catch(IOException e) {
                 System.out.println(e.getMessage());
@@ -362,13 +347,18 @@ public class Server {
             udpInConnection = true;
         }
         
+        /**
+         * Initiates socket shutdown
+         */
         public void close(){
             udpInConnection = false;
         }
 
+        /**
+         * Opens output streams and sends regular broadcasts of client list
+         */
         @Override
         public void run() {
-            System.out.println("About to start run method");
             String[] clientArray= null;
             DatagramPacket packet;
             ObjectOutputStream udp_oos = null;
@@ -376,40 +366,38 @@ public class Server {
             Set<String> keySet;
             
             while (udpInConnection) {
-                System.out.println("udp server is about to send the client list");
                 keySet = clientMap.keySet();
                 clientArray =keySet.toArray(new String[keySet.size()]);
+                
                 if(clientArray != null ){
                     try {
                         // preallocate temporary array and stream
-                        baos = new ByteArrayOutputStream();// create a new ByteArrayOutputStream
-                        udp_oos = new ObjectOutputStream(baos); // wrap baos as an object
-                        udp_oos.writeObject(clientArray);// write those client list as an object in the instance of oos
+                        baos = new ByteArrayOutputStream();
+                        udp_oos = new ObjectOutputStream(baos);
+                        udp_oos.writeObject(clientArray);// send list of clients to baos
                         udp_oos.flush(); 
-                        // creating a byte array and converting the objects stream into byteArray
+                        
+                        // convert clientList to byte[]
                         byte[] data = baos.toByteArray();
                         baos.reset();  // reseting for another stream of byteArray
+                        
+                        // create & send packet
                         packet =new DatagramPacket(data, data.length, group, 8888);
-                        System.out.println("dgp = " + packet.getLength());
-                        System.out.println("udp server is ready to send");
-                        socket.send(packet);// sending the packet in from server socket  
-                        System.out.println("a udp packet has been sent");
-                        System.out.println("\nlist of clients sent by Server.java:");
-                        for (String s : clientArray) {
-                            System.out.println(s);
-                        }
+                        socket.send(packet);// sending the packet in from server socket
                     } catch (IOException e) {
-                            System.out.println(e.getMessage());
+                        System.out.println(e.getMessage());
                     }
                 }
+                
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(BC_WAIT_TIME);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                     Thread.yield();
-
                 }
             }
+            
+            //shutdown
             try{
                 if(baos != null) baos.close();
                 if(udp_oos != null) udp_oos.close();
@@ -420,6 +408,11 @@ public class Server {
             }
         }
     }
+    
+    /**
+     * starts server
+     * @param args - not used
+     */
     public static void main(String[] args) {
         Server s = new Server();
         s.startServer();

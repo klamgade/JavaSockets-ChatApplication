@@ -10,12 +10,11 @@ package messages;
 
 import java.io.Serializable;
 
-public abstract class Message implements Comparable<Message>, Serializable {
+public abstract class Message implements Serializable {
     
     public final static String SERVER = "SERVER";
     protected String from;
     protected String to;
-    protected int msgID;
     
 /******************************************************************************
  *      CONSTRUCTORS
@@ -28,7 +27,6 @@ public abstract class Message implements Comparable<Message>, Serializable {
     public Message(String from, String to){
         this.from = from;
         this.to = to;
-        msgID = -1;
     }
     
    public Message(){
@@ -50,15 +48,6 @@ public abstract class Message implements Comparable<Message>, Serializable {
      */
     public String getDestination() {return to;}
 
-    /**
-     * @return Returns the unique ID of this message
-     */
-    public int getMessageID() {return msgID;}
-
-    /**
-     * @param msgID Should be a sequential id set by the message handler
-     */
-    public void setMessageID(int msgID) {this.msgID = msgID;}
 
     /**
      * Used to Change the destination address
@@ -66,18 +55,6 @@ public abstract class Message implements Comparable<Message>, Serializable {
      */
     public void setDestination(String to) {this.to = to;}
     
-/******************************************************************************
- *  COMPARATOR
- ******************************************************************************/    
-    
-    /**
-     * Compares message IDs (x, y) such that x.compareTo(y) <= 0 Assumes ID values are set by message handler in sequential order
-     * @param other The message which is to be compared
-     * @return Value < 0 if (this < other), or  > 0 if (this > other) and 0 if (this == other)
-     */
-    @Override
-    public int compareTo(Message other){
-        return (this.msgID - other.msgID);
-    }
+
     
 }

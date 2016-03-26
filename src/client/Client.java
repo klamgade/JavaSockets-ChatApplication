@@ -93,6 +93,16 @@ public class Client {
             inputStream.close();
             udpStream.close();
             connected = false;
+            
+            try{
+                tcpSocket.close();
+                udpSocket.close();
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+            clientGUI.updateClientList(new String[]{""});
+            
         }
     } 
 
@@ -164,19 +174,19 @@ public class Client {
                 }
                     Thread.yield();
             }
+            try{
+                ois.close();
+            }
+            catch(IOException e){
+                System.out.println(e.getMessage());
+            }
         }
 
         /**
          * Closes the InputObjectStream
          */
         public void close(){
-            try{
-                ois.close();
-                inStreamConnected = false;
-            }
-            catch(IOException e){
-                System.out.println(e.getMessage());
-            }
+            inStreamConnected = false;
         }
 
         public boolean getSuccess(){

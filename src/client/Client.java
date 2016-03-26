@@ -76,6 +76,7 @@ public class Client {
         if(in.isAlive() && out.isAlive() && udp.isAlive())
             connected = true;
         else System.out.println("One or more of the input/output streams did not start");
+        
     }
 
     /**
@@ -303,9 +304,8 @@ public class Client {
             }catch(IOException e){
                 System.out.println("could not close UDP ois stream: " + e.getMessage());
             }
-            finally{
+            
                 udpIsConnected = false;
-            }
         }
     }
 }

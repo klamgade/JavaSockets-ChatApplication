@@ -18,6 +18,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +60,15 @@ public class Server {
             System.out.println("Socket Issue: " + e.getMessage());
             System.exit(-1);
         }
+        
+        try{
+            UdpServer udpServer = new UdpServer(new DatagramSocket());
+            Thread udpThread = new Thread(udpServer);
+            udpThread.start();        
+        }
+        catch(SocketException se){
+            System.out.println("trouble making datagram socket: " + se.getMessage());
+        }
 
         // Pass incoming clients to new threads
         while (ssConnected) {
@@ -68,16 +78,14 @@ public class Server {
                 System.out.println("Connection made with " + socket.getInetAddress());
                 InputStreamRunnable inStream = new InputStreamRunnable(socket);
                 OutputStreamRunnable outStream = new OutputStreamRunnable(socket);
-                UdpServer udpServer = new UdpServer(new DatagramSocket());
                 Runnable[] threadArray = new Runnable[]{inStream, outStream};
                 inStream.passArray(threadArray);
 
                 Thread inThread = new Thread(inStream);
                 Thread outThread = new Thread(outStream);
-                Thread udpThread = new Thread(udpServer);
                 inThread.start();
                 outThread.start();
-                udpThread.start();
+                
             } catch (IOException e) {
                 System.out.println("There's a problem accepting the client socket Cx: " + e.getMessage());
             }
@@ -127,7 +135,8 @@ public class Server {
                     // Broadcast to be passed to ALL clients
                     if (currentMessage instanceof BroadcastMessage) {
                         broadcastMessageHandler((BroadcastMessage) currentMessage);
-                    } // ToMessage to be passed to another client
+                    } 
+                    // ToMessage to be passed to another client
                     else if (currentMessage instanceof ToMessage) {
                         toMessageHandler((ToMessage) currentMessage);
                     }
@@ -197,8 +206,19 @@ public class Server {
          * @param msg the BroadcastMessage object which shall be broadcast to
          * all clients
          */
-        private void broadcastMessageHandler(BroadcastMessage msg) {
+        private void broadcastMessageHandler(BroadcastMessage bcMsg) {
             System.out.println("server received a BroadcastMessage");
+            ToMessage toMsg = null;
+            Set<String> clientSet = clientMap.keySet();
+            String source = bcMsg.getSource();
+            String msgBody= bcMsg.getMessageBody();
+            
+            for(String client : clientSet){
+                if(!client.equals(source)) {
+                    toMsg = new ToMessage(source, client, msgBody );
+                    toMessageHandler(toMsg);
+                }
+            }
         }
 
         /**

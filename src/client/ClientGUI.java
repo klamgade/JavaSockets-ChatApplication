@@ -207,23 +207,30 @@ public class ClientGUI extends JPanel {
                 }
                 
                 if(source == sendButton || source == bcastButton){
-                    Message newMessage;
+                    Message newMessage = null;
+                    boolean sendMessage = true;  // allows cancellation of message if values are empty
                     String msgText = chatInputField.getText();
                     
                     if((msgText != null) && (!msgText.equals(""))){
                         msgText = "\n\n" + userName + ": " + msgText;
                         
                         if(source == sendButton){
-                            if(clientList.isSelectionEmpty())
+                            if(clientList.isSelectionEmpty()){
                                 JOptionPane.showMessageDialog(null, "You must select a destination");
-                            newMessage = new ToMessage(userName, destination, msgText);
+                                sendMessage = false;
+                            }
+                            else
+                                newMessage = new ToMessage(userName, destination, msgText);
                         }
-                        else newMessage = new BroadcastMessage(userName, msgText);
+                        else
+                            newMessage = new BroadcastMessage(userName, msgText);
                         
-                        System.out.println("about to send msg to: " + destination);
-                        connection.sendMessage(newMessage);
-                        chatDisplay.append(msgText);
-                        chatInputField.setText("");
+                        if(sendMessage){
+                            System.out.println("about to send msg to: " + destination);
+                            connection.sendMessage(newMessage);
+                            chatDisplay.append(msgText);
+                            chatInputField.setText("");
+                        }
                     }
                 }
         }

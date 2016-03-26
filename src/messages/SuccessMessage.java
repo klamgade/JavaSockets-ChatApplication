@@ -1,6 +1,7 @@
 /**
  *  DMS S1 2016 ASSIGNMENT 1
- *  Kamal Lamgade & Sez Prouting
+ *  14845241 Kamal Lamgade
+ *  0308852 Sez Prouting
  *
  * Message from the server to a client indicating if an action was successful or not.
  * 
@@ -13,8 +14,8 @@ public class SuccessMessage extends Message{
     protected boolean success;
     
     /**
-     * @param to Identifies the message destination, use static variable Message.SERVER for server
-     * @param success shall be true if server operation was successful, otherwise false
+     * @param to - Identifies the message destination, use static variable Message.SERVER for server
+     * @param success - shall be true if server operation was successful, otherwise false
      */
     public SuccessMessage(String to, boolean success){
         super(Message.SERVER, to);
@@ -27,6 +28,4 @@ public class SuccessMessage extends Message{
     public boolean getSuccess() {
         return success;
     }
-    
-    
 }

@@ -1,6 +1,7 @@
 /**
  *  DMS S1 2016 ASSIGNMENT 1
- *  Kamal Lamgade & Sez Prouting
+ *  14845241 Kamal Lamgade
+ *  0308852 Sez Prouting
  *
  * Message used by the client to tell server the user wants to disconnect.
  * 
@@ -11,7 +12,7 @@ package messages;
 public class DisconnectMessage extends Message {
     
     /**
-     * @param from Identifies the source of the message, use "null" for null source
+     * @param from - Identifies the source of the message
      */
     public DisconnectMessage(String from){
         super(from, Message.SERVER);

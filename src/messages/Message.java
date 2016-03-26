@@ -1,6 +1,7 @@
 /**
  *  DMS S1 2016 ASSIGNMENT 1
- *  Kamal Lamgade & Sez Prouting
+ *  14845241 Kamal Lamgade
+ *  0308852 Sez Prouting
  *
  * Abstract class to handle client-server messages
  * 
@@ -21,8 +22,8 @@ public abstract class Message implements Serializable {
  ******************************************************************************/
     
     /**
-     * @param from Identifies the source of the message, use "null" for null source
-     * @param to Identifies the message destination, use static variable Message.SERVER for server or "null" for null destination 
+     * @param from - Identifies the client which sent the message
+     * @param to - Identifies the message destination, use static variable Message.SERVER 
      */
     public Message(String from, String to){
         this.from = from;
@@ -39,22 +40,19 @@ public abstract class Message implements Serializable {
  *******************************************************************************/
     
     /**
-     * @return Returns the ID of the application or object which sent this message
+     * @return Returns the client which sent this message
      */
     public String getSource() {return from;}
 
     /**
-     * @return Returns the ID of the application or object to which this message is addressed
+     * @return Returns the destination client to which this message is addressed
      */
     public String getDestination() {return to;}
 
 
     /**
      * Used to Change the destination address
-     * @param to The destination identifier
+     * @param to - The destination identifier
      */
     public void setDestination(String to) {this.to = to;}
-    
-
-    
 }

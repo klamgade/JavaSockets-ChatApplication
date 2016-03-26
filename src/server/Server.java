@@ -31,6 +31,7 @@ public class Server {
     protected final String UDP_HOST = "224.0.0.3";
     protected final int IN_THREAD = 0, OUT_THREAD = 1; // array locations for each client thread
     protected ServerSocket serverSocket;
+    protected UdpServer udpServer;
     protected boolean ssConnected;  //connection status of serverSocket
     protected Map<String, Runnable[]> clientMap;   //list of clients by name & incomming thread
 
@@ -62,7 +63,7 @@ public class Server {
         }
         
         try{
-            UdpServer udpServer = new UdpServer(new DatagramSocket());
+            udpServer = new UdpServer(new DatagramSocket());
             Thread udpThread = new Thread(udpServer);
             udpThread.start();        
         }
@@ -92,6 +93,7 @@ public class Server {
         }
         try{
             serverSocket.close();
+            udpServer.close();
         }
         catch(IOException e){
             System.out.println("could not close the server socket" + e.getMessage());
@@ -343,7 +345,7 @@ public class Server {
     private class UdpServer implements Runnable {
         
         private DatagramSocket socket;
-        private OutputStream udp_oos;
+        //private OutputStream udp_oos;
         private boolean udpInConnection;
         private InetAddress group;
 
@@ -360,13 +362,18 @@ public class Server {
             }
             udpInConnection = true;
         }
+        
+        public void close(){
+            udpInConnection = false;
+        }
 
         @Override
         public void run() {
             System.out.println("About to start run method");
             String[] clientArray= null;
             DatagramPacket packet;
-            ObjectOutputStream udp_oos;
+            ObjectOutputStream udp_oos = null;
+            ByteArrayOutputStream baos = null;
             Set<String> keySet;
             
             while (udpInConnection) {
@@ -374,26 +381,26 @@ public class Server {
                 keySet = clientMap.keySet();
                 clientArray =keySet.toArray(new String[keySet.size()]);
                 if(clientArray != null ){
-                try {
-                    // preallocate temporary array and stream
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();// create a new ByteArrayOutputStream
-                    udp_oos = new ObjectOutputStream(baos); // wrap baos as an object
-                    udp_oos.writeObject(clientArray);// write those client list as an object in the instance of oos
-                    udp_oos.flush(); 
-                    // creating a byte array and converting the objects stream into byteArray
-                    byte[] data = baos.toByteArray();
-                    baos.reset();  // reseting for another stream of byteArray
-                    packet =new DatagramPacket(data, data.length, group, 8888);
-                    System.out.println("dgp = " + packet.getLength());
-                    System.out.println("udp server is ready to send");
-                    socket.send(packet);// sending the packet in from server socket  
-                    System.out.println("a udp packet has been sent");
-                    System.out.println("\nlist of clients sent by Server.java:");
-                    for (String s : clientArray) {
-                        System.out.println(s);
-                    }
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
+                    try {
+                        // preallocate temporary array and stream
+                        baos = new ByteArrayOutputStream();// create a new ByteArrayOutputStream
+                        udp_oos = new ObjectOutputStream(baos); // wrap baos as an object
+                        udp_oos.writeObject(clientArray);// write those client list as an object in the instance of oos
+                        udp_oos.flush(); 
+                        // creating a byte array and converting the objects stream into byteArray
+                        byte[] data = baos.toByteArray();
+                        baos.reset();  // reseting for another stream of byteArray
+                        packet =new DatagramPacket(data, data.length, group, 8888);
+                        System.out.println("dgp = " + packet.getLength());
+                        System.out.println("udp server is ready to send");
+                        socket.send(packet);// sending the packet in from server socket  
+                        System.out.println("a udp packet has been sent");
+                        System.out.println("\nlist of clients sent by Server.java:");
+                        for (String s : clientArray) {
+                            System.out.println(s);
+                        }
+                    } catch (IOException e) {
+                            System.out.println(e.getMessage());
                     }
                 }
                 try {
@@ -403,6 +410,14 @@ public class Server {
                     Thread.yield();
 
                 }
+            }
+            try{
+                if(baos != null) baos.close();
+                if(udp_oos != null) udp_oos.close();
+                socket.close();
+            }
+            catch(IOException e){
+                System.out.println("could not close UDP streams: " + e.getMessage());
             }
         }
     }

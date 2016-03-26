@@ -167,30 +167,6 @@ public class Server {
                 if (currentMessage instanceof DisconnectMessage) {
                     disconnectMessageHandler((DisconnectMessage) currentMessage);
                 }
-
-                // Broadcast to be passed to ALL clients
-                if (currentMessage instanceof BroadcastMessage) {
-                    broadcastMessageHandler((BroadcastMessage) currentMessage);
-                } // ToMessage to be passed to another client
-                else if (currentMessage instanceof ToMessage) {
-                    toMessageHandler((ToMessage) currentMessage);
-                }
-
-                // IdMessage to create a new client
-                if (currentMessage instanceof IdMessage) {
-                    clientAdded = newClientHandler((IdMessage) currentMessage);
-                    System.out.println("\tclientAdded boolean = " + clientAdded);
-
-                    // return clientAdded (success flag) to the client.
-                    SuccessMessage succMsg = new SuccessMessage(currentMessage.getSource(), clientAdded);
-                    clientMap.get(currentMessage.getSource()).sendMessage(succMsg);
-                }
-
-                // Disconnect to close connection
-                if (currentMessage instanceof DisconnectMessage) {
-                    disconnectMessageHandler((DisconnectMessage) currentMessage);
-                }
-
             }
             
             

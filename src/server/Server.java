@@ -26,14 +26,15 @@ import messages.*;
 
 public class Server {
 
-    public static final int PORT = 8889;
-    protected final String UDP_HOST = "224.0.0.3";
+    public static final int PORT = 8889; // TCP port number
+    protected final String UDP_HOST = "224.0.0.3"; // multicast group address which allow access to all clients in the chat group.
     protected final int BC_WAIT_TIME = 1000; // pause time before rebroadcast
     protected ServerSocket serverSocket;
     protected UdpServer udpServer;
     protected boolean ssConnected;  //connection status of serverSocket
     protected Map<String, OutputStreamRunnable> clientMap; //used to access output thread from the input thread
-    
+  
+    // constructor
     public Server() {
         ssConnected = false;
         clientMap = new ConcurrentHashMap<>();
@@ -73,7 +74,8 @@ public class Server {
                 OutputStreamRunnable outStream = new OutputStreamRunnable(socket);
                 inStream.passOutputThread(outStream); // so input stream can add output stream to the clientMap
 
-                Thread inThread = new Thread(inStream);
+                // used for multiple threads of execution running concurrently
+                Thread inThread = new Thread(inStream); 
                 Thread outThread = new Thread(outStream);
                 inThread.start();
                 outThread.start();
@@ -212,7 +214,7 @@ public class Server {
          */
         private void broadcastMessageHandler(BroadcastMessage bcMsg) {
             ToMessage toMsg = null;
-            Set<String> clientSet = clientMap.keySet();
+            Set<String> clientSet = clientMap.keySet(); // stores list of clients as a set with no duplicate elements
             String source = bcMsg.getSource();
             String msgBody= bcMsg.getMessageBody();
             
@@ -393,7 +395,7 @@ public class Server {
                     Thread.sleep(BC_WAIT_TIME);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    Thread.yield();
+                    Thread.yield(); // give other threads a chance
                 }
             }
             

@@ -32,6 +32,7 @@ public class ClientGUI extends JPanel {
     private DefaultListModel<String> clientListModel;
     private Client connection;
 
+    //constructor
     public ClientGUI() {
         super();
 
@@ -85,7 +86,7 @@ public class ClientGUI extends JPanel {
 
         connection = new Client(this);
     }
-
+// Panels for differnet sections on GUI
     private class MainInfoPanel extends JPanel {
 
         public MainInfoPanel() {
@@ -188,7 +189,7 @@ public class ClientGUI extends JPanel {
                             
                             // Need to pause for server to respond
                             try {
-                                Thread.sleep(500);
+                                Thread.sleep(500); // pauses thread for 500 milliseconds
                             } catch (InterruptedException ex) {
                                 Thread.currentThread().interrupt();
                             }
@@ -209,7 +210,7 @@ public class ClientGUI extends JPanel {
                 connected = !connected;
             }
 
-            if (source == sendButton || source == bcastButton) {
+            if (source == sendButton || source == bcastButton) { // actions performed while pressed send or broadcast button
                 Message newMessage = null;
                 boolean sendMessage = true;  // allows cancellation of message if values are empty
                 String msgText = chatInputField.getText();
@@ -258,11 +259,12 @@ public class ClientGUI extends JPanel {
         this.clientName = clientName;
     }
 
+    // method to update users list when connected after disconnected 
     public void updateClientList(String[] newList) {
         String selected = (String) clientList.getSelectedValue();
-        clientListModel.clear();
+        clientListModel.clear(); 
 
-        for (String str : newList) {
+        for (String str : newList) { //iterate through new client list after an update
             if (!str.equals(clientName)) {
                 clientListModel.addElement(str);
             }
@@ -271,7 +273,7 @@ public class ClientGUI extends JPanel {
             clientList.setSelectedValue(selected, true);
         }
     }
-
+ // Main  method to execute the program
     public static void main(String[] args) {
         JFrame frame = new JFrame("Kamasez Chat");
         Toolkit tk = Toolkit.getDefaultToolkit();

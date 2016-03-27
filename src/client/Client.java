@@ -22,18 +22,18 @@ import messages.*;
 public class Client {
 
     protected final String TCP_HOST = "localhost";
-    protected final String UDP_HOST = "224.0.0.3";
+    protected final String UDP_HOST = "224.0.0.3"; // multicast group address which allow access to all clients in the chat group.
     protected final int TCP_PORT = 8889; // TCP host port number
     protected final int UDP_PORT = 8888; // UDP host port number
-    protected Socket tcpSocket;
-    protected MulticastSocket udpSocket;
+    protected Socket tcpSocket; // socket for tcp layer 
+    protected MulticastSocket udpSocket; // a udp datagramsocket for joining "groups" of other multicast hosts on the internet. 
     protected boolean connected, waitingSuccessMsg;
     private InputStreamRunnable inputStream;
     private OutputStreamRunnable outputStream;
     private UDP_Runnable udpStream;
     private ClientGUI clientGUI;
 
-
+// constructor
     public Client(ClientGUI gui) {
         tcpSocket = null;
         udpSocket = null;
@@ -60,7 +60,8 @@ public class Client {
         outputStream = new OutputStreamRunnable(tcpSocket);
         udpStream = new UDP_Runnable(udpSocket);
 
-        Thread in = new Thread(inputStream);
+        // used for multiple threads of execution running concurrently
+        Thread in = new Thread(inputStream); 
         Thread out = new Thread(outputStream);
         Thread udp = new Thread(udpStream);
 
@@ -120,7 +121,7 @@ public class Client {
         }
         else return false;
     }
-
+//implementating Runnable interface to share the same object to multiple threads
     private class InputStreamRunnable implements Runnable{
 
         protected ObjectInputStream ois;
@@ -135,7 +136,7 @@ public class Client {
         }
 
         @Override
-        public void run(){
+        public void run(){  // object's run method to be called while starting a separately executing thread everytime.
             try{
                 ois = new ObjectInputStream(socket.getInputStream());
                 inStreamConnected = true;
@@ -164,7 +165,7 @@ public class Client {
                             clientGUI.updateMessageDisplay(msg.getMessageBody());
                         }
                 }
-                    Thread.yield();
+                    Thread.yield(); // give other threads a chance
             }
             try{
                 ois.close();
@@ -254,8 +255,8 @@ public class Client {
             udpIsConnected = false;
             
             try{
-                InetAddress group = InetAddress.getByName(UDP_HOST);
-                socket.joinGroup(group);
+                InetAddress group = InetAddress.getByName(UDP_HOST); // INetAddress representing  an Internet Protocol (IP) address.
+                socket.joinGroup(group); // joins a multicast group
             }
             catch(IOException e){
                 System.out.println("Could not join group" + e.getMessage());
@@ -265,8 +266,8 @@ public class Client {
         
         @Override
         public void run(){
-            String[] clientList = null;
-            byte[] buffer = new byte[10000];
+            String[] clientList = null; 
+            byte[] buffer = new byte[10000]; // preallocate temporary arrays large enough for DatagramPacket
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             
             while(udpIsConnected){
@@ -282,7 +283,9 @@ public class Client {
                     Thread.yield();
             }
         }
-        
+        /**
+         * Closes the UDP_Runnable ObjectInputputStream
+         */
         public void close(){
             try{
                 udp_ois.close();

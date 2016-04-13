@@ -32,7 +32,7 @@ public class Server {
     protected ServerSocket serverSocket;
     protected UdpServer udpServer;
     protected boolean ssConnected;  //connection status of serverSocket
-    protected Map<String, OutputStreamRunnable> clientMap; //used to access output thread from the input thread
+    protected final Map<String, OutputStreamRunnable> clientMap; //used to access output thread from the input thread
   
     // constructor
     public Server() {
@@ -102,7 +102,7 @@ public class Server {
         synchronized(clientMap){
             if(!clientMap.isEmpty())
                 ssConnected = false;
-    }
+        }
     }
 
     /**
@@ -220,7 +220,10 @@ public class Server {
          */
         private void broadcastMessageHandler(BroadcastMessage bcMsg) {
             ToMessage toMsg = null;
-            Set<String> clientSet = clientMap.keySet(); // stores list of clients as a set with no duplicate elements
+            Set<String> clientSet;
+            synchronized(clientMap){
+                clientSet = clientMap.keySet(); // stores list of clients as a set with no duplicate elements
+            }
             String source = bcMsg.getSource();
             String msgBody= bcMsg.getMessageBody();
             

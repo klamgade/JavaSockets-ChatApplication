@@ -99,8 +99,10 @@ public class Server {
      * Closes safely closes the user socket only if there are no clients connected. Determined by entries in the clientMap
      */
     public void close(){
-        if(!clientMap.isEmpty())
-            ssConnected = false;
+        synchronized(clientMap){
+            if(!clientMap.isEmpty())
+                ssConnected = false;
+    }
     }
 
     /**
@@ -162,7 +164,9 @@ public class Server {
 
                     // return clientAdded (success flag) to the client.
                     SuccessMessage succMsg = new SuccessMessage(currentMessage.getSource(), clientAdded);
-                    clientMap.get(currentMessage.getSource()).sendMessage(succMsg);
+                    synchronized(clientMap){
+                        clientMap.get(currentMessage.getSource()).sendMessage(succMsg);
+                    }
                 }
 
                 // Disconnect message will close the connection
@@ -199,9 +203,11 @@ public class Server {
         private void toMessageHandler(ToMessage inMsg) {
             String dest = inMsg.getDestination();
 
-            if (clientMap.containsKey(dest)) {
-                // find outbound thread of destination client & send
-                clientMap.get(dest).sendMessage(inMsg);
+            synchronized(clientMap){
+                if (clientMap.containsKey(dest)) {
+                    // find outbound thread of destination client & send
+                    clientMap.get(dest).sendMessage(inMsg);
+                }
             }
         }
 
@@ -237,10 +243,12 @@ public class Server {
         private void disconnectMessageHandler(DisconnectMessage disMsg) {
             String client = disMsg.getSource();
 
-            if (clientMap.containsKey(client)) {                
-                clientMap.get(client).close();
-                threadConnected = false;
-                clientMap.remove(client);
+            synchronized(clientMap){
+                if (clientMap.containsKey(client)) {                
+                    clientMap.get(client).close();
+                    threadConnected = false;
+                    clientMap.remove(client);
+                }
             }
         }
 
@@ -258,13 +266,15 @@ public class Server {
             //extract client name
             String clientName = newMsg.getSource();
 
-            // check if name is already taken
-            if (clientMap.containsKey(clientName)) {
-                return false;
-            } else {
-                //add this input thread to the thread appay in the client map
-                clientMap.put(clientName, outputThread);
-                return true;
+            synchronized(clientMap){
+                // check if name is already taken
+                if (clientMap.containsKey(clientName)) {
+                    return false;
+                } else {
+                    //add this input thread to the thread appay in the client map
+                    clientMap.put(clientName, outputThread);
+                    return true;
+                }
             }
         }
 

@@ -195,7 +195,7 @@ public class ClientGUI extends JPanel {
                             }
                             
                             if (connection.checkMessageSuccess()) {
-                                JOptionPane.showMessageDialog(null, "Yey!! User " + idMessage.getSource() + " is connected.");
+                                JOptionPane.showMessageDialog(null, "You are connected as " + idMessage.getSource() + ".");
                                 connectionButton.setText("DISCONNECT");
                                 connectionStatusLabel.setText(CONNECT_MESSAGE + userName);
                                 setClientName(userName);
